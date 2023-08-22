@@ -114,6 +114,7 @@ watchEffect(() => {
 
 function starsEventListener() {
   if (!ratingSet.value.isSet) {
+    console.log("h")
     stars.value = document.querySelectorAll(".star");
     stars.value.forEach((star, index) => {
       star.addEventListener("mouseenter", () => {
@@ -497,19 +498,15 @@ function removeSelection(index) {
 }
 
 function setRating(indexValue) {
+  stars.value = document.querySelectorAll(".star");
   ratingSet.value.isSet = true;
   ratingSet.value.ratingNumber = indexValue;
 
-  while(indexValue >= 1) {
-    ratingSet.value.ratingNumber = indexValue;
-    stars.value = document.querySelectorAll(".star");
-    stars.value.forEach((star, index) => {
-      if (index <= indexValue) {
-        star.style.backgroundPosition = 'left -123px'
-      }
-      indexValue--;
-    });
-  }
+  stars.value.forEach((star, index) => {
+    if (index < indexValue) {
+      star.style.backgroundPosition = 'left -123px'
+    }
+  })
 }
 
 let oneTimer = true;
