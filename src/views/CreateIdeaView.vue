@@ -46,6 +46,9 @@ const onlyForDeleteCategories = ref([]);
 
 const ideaNotValid = ref(false);
 
+const regex =
+  /^(?=.*[A-Za-z0-9].*[A-Za-z0-9].*[A-Za-z0-9].*[A-Za-z0-9].*[A-Za-z0-9]).*$/;
+
 const handleSelectedCategories = (selectedCategories) => {
   categoriesSelected.value = selectedCategories;
 };
@@ -273,14 +276,46 @@ async function createIdeaFunction() {
   const rawCategoriesValue = categoriesSelected.value;
   const categoryErrorCheck =
     !Array.isArray(rawCategoriesValue) || rawCategoriesValue.length === 0;
+
+  // extra checks to assure the value of input and text
+  if (textValue.value === undefined || textValue.value === null) {
+    textValue.value = "";
+  }
+  if (inputValue.value === undefined || inputValue.value === null) {
+    inputValue.value = "";
+  }
+
+  let okInput = 0;
+  for (let i = 0; i < inputValue.value.length; i++) {
+    if (inputValue.value[i] !== " ") {
+      okInput = 1;
+      break;
+    }
+  }
+  if (okInput == 0) {
+    inputValue.value = "";
+  }
   const titleErrorCheck =
     inputValue.value === null ||
     inputValue.value === "" ||
-    inputValue.value === undefined;
+    inputValue.value === undefined ||
+    okInput === 0;
+
+  let okText = 0;
+  for (let j = 0; j < textValue.value.length; j++) {
+    if (textValue.value[j] !== " ") {
+      okText = 1;
+      break;
+    }
+  }
+  if (okText == 0) {
+    textValue.value = "";
+  }
   const textErrorCheck =
     textValue.value === null ||
     textValue.value === "" ||
-    textValue.value === undefined;
+    textValue.value === undefined ||
+    okText === 0;
 
   if (titleErrorCheck) {
     titleError.value = "Please select a title...";
@@ -497,7 +532,14 @@ function removeSelection(index) {
             v-if="showDeletePopup || disableFields || ideaNotValid"
             v-model="onlyForDeleteCategories"
             :disabled="disableFields"
-            style="width: 15.8vw; height: 2vh; background-color: rgba(255, 255, 255, 0.597); border-radius: 3px; border: 1px  slategray; color: black;"
+            style="
+              width: 15.8vw;
+              height: 2vh;
+              background-color: rgba(255, 255, 255, 0.597);
+              border-radius: 3px;
+              border: 1px slategray;
+              color: black;
+            "
           />
         </div>
 
@@ -613,8 +655,16 @@ function removeSelection(index) {
         <CustomDialog
           ref="customDialog"
           :open="deletePopup || ideaNotValid"
-          :title="!ideaNotValid ? `Are you sure you want to delete '${currentIdeaTitle}'?` : `This idea doesn't exist anymore`"
-          :message="!ideaNotValid ? 'This item will be deleted immediately. You can\'t undo this action!' : 'Please go back to the main page.'"
+          :title="
+            !ideaNotValid
+              ? `Are you sure you want to delete '${currentIdeaTitle}'?`
+              : `This idea doesn't exist anymore`
+          "
+          :message="
+            !ideaNotValid
+              ? 'This item will be deleted immediately. You can\'t undo this action!'
+              : 'Please go back to the main page.'
+          "
         >
           <div class="dialog-actions" v-if="deletePopup && !ideaNotValid">
             <button @click="handleCancel">Cancel</button>
