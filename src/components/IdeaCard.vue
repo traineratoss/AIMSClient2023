@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import CustomComment from "../components/CustomComment.vue";
 import router from "../router";
 import {
@@ -9,7 +9,7 @@ import {
   postReply,
 } from "../services/comment.service";
 import { getCurrentUsername, getCurrentRole } from "../services/user_service";
-import { getIdea } from "../services/idea.service";
+import { getIdea, getIdeaRatingAverage } from "../services/idea.service";
 
 const props = defineProps({
   title: "",
@@ -35,6 +35,13 @@ const arrayOfCommentIdAndReplyPair = ref([]);
 const isSelected = ref(false);
 const maxCommentLength = 500;
 const numberOfDisplayedComments = ref(10);
+const ratingAverage = ref(0);
+
+onMounted(async () => {
+  const data = await getIdeaRatingAverage(props.ideaId);
+
+  ratingAverage.value = data;
+})
 
 async function editIdea() {
   const data = await getIdea(props.ideaId);
@@ -362,6 +369,16 @@ function triggerCollapseAnimation(commentId) {
     };
   }
 }
+
+function getStarRating() {
+  const starPercentage = (ratingAverage.value / 5) * 100;
+
+  const starPercentageRounded = Math.round
+    (starPercentage / 10) * 10;
+
+  return starPercentage + "%";
+}
+
 </script>
 
 <template>
@@ -388,6 +405,9 @@ function triggerCollapseAnimation(commentId) {
         <div class="idea-card">
           <div class="top-container">
             <div class="left-container">
+              <div class="stars-outer">
+                 <div class="stars-inner" :style="{ width: getStarRating() }"></div>
+              </div>
               <div class="left-container-title">
                 <div class="text" v-if="isSelected">
                   {{ getShortenedTitle(title, 40) }}
@@ -395,6 +415,7 @@ function triggerCollapseAnimation(commentId) {
                 <div class="text" v-else>
                   {{ getShortenedTitle(title, 32) }}
                 </div>
+                
               </div>
               <div class="status">
                 {{ props.status }}
@@ -587,6 +608,38 @@ function triggerCollapseAnimation(commentId) {
 </template>
 
 <style scoped>
+
+.stars-outer {
+  position: relative;
+  display: inline-block;
+  width: 80px;
+  box-sizing: border-box;
+  margin-top: 1.5vh;
+  margin-left: 5px;
+}
+
+.stars-inner {
+  top: 0;
+  box-sizing: border-box;
+  position: absolute;
+  overflow: hidden;
+}
+
+.stars-outer::before {
+  content: "\f005 \f005 \f005 \f005 \f005";
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  color: #ccc;
+  width: 100%;
+}
+
+.stars-inner::before {
+  content: "\f005 \f005 \f005 \f005 \f005";
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  color: #eb9224;
+}
+
 .expand-animation {
   transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
   transition-delay: 0.05s;
@@ -742,7 +795,7 @@ function triggerCollapseAnimation(commentId) {
 
 .left-container {
   display: grid;
-  grid-template-rows: 20% 30px auto;
+  grid-template-rows: 15% 20% 35px auto;
   margin-left: 10px;
 }
 
@@ -821,6 +874,13 @@ function triggerCollapseAnimation(commentId) {
 
 .status {
   margin-left: 5px;
+  font-weight: 400;
+  font-size: medium;
+}
+
+.rating-average {
+  margin-left: 5px;
+  margin-top: 7px;
   font-weight: 400;
   font-size: medium;
 }
