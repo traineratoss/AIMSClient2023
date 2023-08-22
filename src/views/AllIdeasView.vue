@@ -188,13 +188,16 @@ function scrollFade() {
       reveals[i].getBoundingClientRect().top -
       ideasTransitionContainer.value.getBoundingClientRect().bottom;
 
-    let distanceBottom = scrollDirection === "down" ? 30 : -30;
+    let distanceBottom = scrollDirection === "down" ? 75 : -130;
 
     let distanceTop = scrollDirection === "down" ? 120 : -80;
 
     const gapTop = distanceBottom;
 
     const gapBottom = distanceTop;
+
+    console.log(reveals[0].getBoundingClientRect().bottom -
+      ideasTransitionContainer.value.getBoundingClientRect().top)
 
     // If the card is visible
 
@@ -223,7 +226,7 @@ function scrollFade() {
         // Setting the opacities of the bottom elements to fade in and out
 
 
-        if (elementTop < 125) {
+        if (elementTop < 100) {
           const topOpacityPercentage = -75/50 + (reveals[i].getBoundingClientRect().top -
           ideasTransitionContainer.value.getBoundingClientRect().bottom) / 50;
           reveals[i].style.opacity = `${topOpacityPercentage}`;
@@ -251,21 +254,21 @@ function scrollFade() {
 
       // If the card doesnt respect the conditions, it isn't active anymore and I check which direction it will go
     } else {
-      reveals[i].classList.remove("active");
+      // reveals[i].classList.remove("active");
 
-      if (
-        ideasTransitionContainer.value.clientHeight -
-          reveals[i].getBoundingClientRect().bottom >
-        -100
-      ) {
-        reveals[i].style.transform = `translateY(-200px)`;
-      } else if (
-        reveals[i].getBoundingClientRect().top -
-          ideasTransitionContainer.value.getBoundingClientRect().top >
-        50
-      ) {
-        reveals[i].style.transform = `translateY(200px)`;
-      }
+      // if (
+      //   ideasTransitionContainer.value.clientHeight -
+      //     reveals[i].getBoundingClientRect().bottom >
+      //   -100
+      // ) {
+      //   reveals[i].style.transform = `translateY(-200px)`;
+      // } else if (
+      //   reveals[i].getBoundingClientRect().top -
+      //     ideasTransitionContainer.value.getBoundingClientRect().top >
+      //   50
+      // ) {
+      //   reveals[i].style.transform = `translateY(200px)`;
+      // }
     }
   }
 }
