@@ -94,6 +94,7 @@ async function filterIdeas(
   status,
   category,
   user,
+  ratingNumber,
   selectedDateFrom,
   selectedDateTo,
   pageNumber,
@@ -125,6 +126,7 @@ async function filterIdeas(
       if (selectedDateFrom) url += `&selectedDateFrom=${selectedDateFrom}`;
       if (selectedDateTo) url += `&selectedDateTo=${selectedDateTo}`;
       if (username) url += `&username=${username}`;
+      if (ratingNumber) url += `&ratingNumber=${ratingNumber}`
     
       const response = await fetch(url, {
         method: "GET",

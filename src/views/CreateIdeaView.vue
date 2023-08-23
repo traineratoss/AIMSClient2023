@@ -873,6 +873,7 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
 .no-raters {
   font-weight: 600;
   font-size: 1.5vh;
+  animation: fadeIn 1s
 }
 
 .stars-outer {
@@ -934,6 +935,7 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
   padding-right: 1vw;
   width: 11.5vw;
   flex-flow: row wrap;
+  animation: fadeIn 1s
 }
 
 .list-of-raters:hover {

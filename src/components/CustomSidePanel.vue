@@ -41,6 +41,12 @@ const statusPercentage = ref("10%");
 const categoryPercentage = ref("10%");
 const userPercentage = ref("10%");
 
+const stars = ref(null);
+const ratingSet = ref({
+  isSet: false,
+  ratingNumber: 0,
+});
+
 const statusOptions =
   props.currentUser === null
     ? ["OPEN", "IMPLEMENTED"]
@@ -68,6 +74,7 @@ watch(
     statusSelected,
     categoriesSelected,
     userSelected,
+    ratingSet.value.ratingNumber,
     selectedDateFrom,
     selectedDateTo,
   ],
@@ -77,6 +84,7 @@ watch(
     newStatusSelected,
     newCategoriesSelected,
     newUserSelected,
+    newRatingSelected,
     newSelectedDateFrom,
     newSelectedDateTo,
   ]) => {
@@ -87,6 +95,7 @@ watch(
       newStatusSelected,
       newCategoriesSelected,
       newUserSelected,
+      newRatingSelected,
       newSelectedDateFrom,
       newSelectedDateTo
     );
@@ -143,6 +152,12 @@ onMounted(async () => {
   sortOrder.value = "ASC";
 });
 
+watch(ratingSet, async (newValue) => {
+  if (!newValue.isSet) {
+    ratingSet.value.ratingNumber = null;
+  }
+}, { deep: true })
+
 const filter = async () => {
   const title = inputTitle.value;
   const text = inputText.value;
@@ -152,12 +167,18 @@ const filter = async () => {
   const user = userSelected.value;
   const status = statusSelected.value;
 
+  let ratingNumber = null;
+  if (ratingSet.value.isSet) {
+    ratingNumber = ratingSet.value.ratingNumber;
+  }
+
   const filteredIdeas = await filterIdeas(
     title,
     text,
     status,
     category,
     user,
+    ratingSet.value.ratingNumber,
     dateFrom,
     dateTo,
     props.currentPage - 1,
@@ -197,6 +218,12 @@ function clearSelection() {
   setTimeout(() => {
     clearAllDropdownValues.value = false;
   }, 10);
+  ratingSet.value.isSet = false;
+  ratingSet.value.ratingNumber = 0;
+  stars.value = document.querySelectorAll(".star");
+  stars.value.forEach((star, index) => {
+      star.style.backgroundPosition = "left -0.2vh";
+  });
 }
 
 function displaySelection(categoriesList) {
@@ -332,22 +359,134 @@ function stringifyOptions(option) {
 function topContainerGridPercentages() {
   if (
     statusSelected.value.length > 0 &&
-    categoriesSelected.value.length === 0
+    categoriesSelected.value.length === 0 &&
+    userSelected.value.length === 0
   ) {
     return "top-container-status-activated";
   }
   if (
     statusSelected.value.length === 0 &&
-    categoriesSelected.value.length > 0
+    categoriesSelected.value.length > 0 &&
+    userSelected.value.length === 0
   ) {
     return "top-container-category-activated";
   }
-  if (statusSelected.value.length > 0 && categoriesSelected.value.length > 0) {
+  if (
+    statusSelected.value.length === 0 &&
+    categoriesSelected.value.length === 0 &&
+    userSelected.value.length > 0
+  ) {
+    return "top-container-user-activated";
+  }
+  if (
+    statusSelected.value.length > 0 &&
+    categoriesSelected.value.length > 0 &&
+    userSelected.value.length === 0
+  ) {
     return "top-container-status-and-category-activated";
+  }
+  if (
+    statusSelected.value.length > 0 &&
+    categoriesSelected.value.length === 0 &&
+    userSelected.value.length > 0
+  ) {
+    return "top-container-status-and-user-activated";
+  }
+  if (
+    statusSelected.value.length === 0 &&
+    categoriesSelected.value.length > 0 &&
+    userSelected.value.length > 0
+  ) {
+    return "top-container-user-and-category-activated";
+  }
+  if (
+    statusSelected.value.length > 0 &&
+    categoriesSelected.value.length > 0 &&
+    userSelected.value.length > 0
+  ) {
+    return "top-container-user-and-status-and-category-activated";
   } else {
     return "top-container";
   }
 }
+
+function starsEventListener(indexValue) {
+  // First, we have a condition, if the rating is set by click
+  // If not, we add event listeners on each star so we know when being on each other
+  // We calculate the amount of stars we should have
+  // If we clicked a star, it means we already set a rating and it goes into the else statement
+  // there, if we go on on another star, it will reset the rating and we can put another rating
+  if (!ratingSet.value.isSet) {
+    stars.value = document.querySelectorAll(".star");
+    stars.value.forEach((star, index) => {
+      star.addEventListener("mouseenter", () => {
+        if (index == 0 && !ratingSet.value.isSet) {
+          star.style.backgroundPosition = "left -8.8vh";
+        } else if (!ratingSet.value.isSet) {
+          let number = index;
+          while (number >= 0) {
+            stars.value[number].style.backgroundPosition = "left -8.8vh";
+            number--;
+          }
+        }
+      });
+
+      star.addEventListener("mouseleave", () => {
+        if (index == 0 && !ratingSet.value.isSet) {
+          star.style.backgroundPosition = "left -0.2vh";
+        } else if (!ratingSet.value.isSet) {
+          let number = index;
+          while (number >= 0) {
+            stars.value[number].style.backgroundPosition = "left -0.2vh";
+            number--;
+          }
+        }
+      });
+    });
+  } else {
+    stars.value = document.querySelectorAll(".star");
+    if (indexValue !== ratingSet.value.ratingNumber) {
+      stars.value.forEach((star, index) => {
+        if (index < indexValue) {
+          star.style.backgroundPosition = "left -8.8vh";
+        } else {
+          star.style.backgroundPosition = "left -0.2vh";
+        }
+      });
+      ratingSet.value.isSet = false;
+    }
+  }
+}
+
+let oneTimer = true;
+function onMountStars() {
+  if (oneTimer && !ratingSet.value.isSet) {
+    starsEventListener();
+    oneTimer = false;
+  } else {
+    oneTimer = false;
+  }
+}
+
+
+async function setRating(indexValue) {
+  stars.value = document.querySelectorAll(".star");
+  ratingSet.value.isSet = true;
+  ratingSet.value.ratingNumber = indexValue;
+
+  stars.value.forEach((star, index) => {
+    if (index < indexValue) {
+      star.style.backgroundPosition = "left -8.8vh";
+    }
+  });
+
+  await addRatingToIdea(
+    ideaId,
+    ratingSet.value.ratingNumber,
+    getCurrentUsername()
+  );
+}
+
 </script>
 
 <template>
@@ -363,54 +502,29 @@ function topContainerGridPercentages() {
 
       <div class="top-container-child">
         <span class="title"> Title: </span>
-        <CustomInput
-          v-model="inputTitle"
-          :placeholder="`Write a title...`"
-          :can-modify-search-value="true"
-          :widthInPx="13"
-          :height-in-px="2.5"
-          :style="{ 'background-color': 'white', 'font-weight': '370' }"
-        />
+        <CustomInput v-model="inputTitle" :placeholder="`Write a title...`" :can-modify-search-value="true"
+          :widthInPx="13" :height-in-px="2.5" :style="{ 'background-color': 'white', 'font-weight': '370' }" />
       </div>
 
       <div class="top-container-child">
         <span class="text">Text:</span>
-        <CustomInput
-          v-model="inputText"
-          class="text-input"
-          :placeholder="`Write a text...`"
-          :can-modify-search-value="false"
-          :widthInPx="13"
-          :height-in-px="2.5"
-          :style="{ 'background-color': 'white', 'font-weight': '370' }"
-        />
+        <CustomInput v-model="inputText" class="text-input" :placeholder="`Write a text...`"
+          :can-modify-search-value="false" :widthInPx="13" :height-in-px="2.5"
+          :style="{ 'background-color': 'white', 'font-weight': '370' }" />
       </div>
 
       <div class="top-container-child">
-        <span :class="statusSelected.length > 0 ? 'status2' : 'status'"
-          >Status:</span
-        >
+        <span :class="statusSelected.length > 0 ? 'status2' : 'status'">Status:</span>
 
         <div class="top-container-child-dropdown">
-          <CustomDropDown
-            :variants="statusOptions"
-            @update:selectedOptions="handleSelectedStatus"
-            :canAddInDropdown="false"
-            :input-placeholder="`Select your statuses...`"
-            :clear-all="clearAllDropdownValues"
-            :width-in-vw="13"
-            :height-in-vh="5"
-            :selectedObjects="stringifyOptions('status')"
-          >
+          <CustomDropDown :variants="statusOptions" @update:selectedOptions="handleSelectedStatus"
+            :canAddInDropdown="false" :input-placeholder="`Select your statuses...`" :clear-all="clearAllDropdownValues"
+            :width-in-vw="13" :height-in-vh="5" :selectedObjects="stringifyOptions('status')">
           </CustomDropDown>
 
           <div class="display-container">
-            <div
-              class="display-items-container"
-              v-for="(status, index) in statusSelected"
-              :key="index"
-              @click="removeSelection('statusType', index)"
-            >
+            <div class="display-items-container" v-for="(status, index) in statusSelected" :key="index"
+              @click="removeSelection('statusType', index)">
               {{ status }} <b>x</b>
             </div>
           </div>
@@ -418,30 +532,17 @@ function topContainerGridPercentages() {
       </div>
 
       <div class="top-container-child">
-        <span :class="categoriesSelected.length > 0 ? 'category2' : 'category'"
-          >Category:</span
-        >
+        <span :class="categoriesSelected.length > 0 ? 'category2' : 'category'">Category:</span>
 
         <div class="top-container-child-dropdown">
-          <CustomDropDown
-            :variants="categoryOptions"
-            @update:selectedOptions="handleSelectedCategories"
-            :canAddInDropdown="false"
-            :input-placeholder="`Select your categories...`"
-            :clear-all="clearAllDropdownValues"
-            :width-in-vw="13"
-            :height-in-vh="5"
-            :selectedObjects="stringifyOptions('category')"
-          >
+          <CustomDropDown :variants="categoryOptions" @update:selectedOptions="handleSelectedCategories"
+            :canAddInDropdown="false" :input-placeholder="`Select your categories...`" :clear-all="clearAllDropdownValues"
+            :width-in-vw="13" :height-in-vh="5" :selectedObjects="stringifyOptions('category')">
           </CustomDropDown>
 
           <div class="display-container">
-            <div
-              class="display-items-container"
-              v-for="(category, index) in categoriesSelected"
-              :key="index"
-              @click="removeSelection('categoryType', index)"
-            >
+            <div class="display-items-container" v-for="(category, index) in categoriesSelected" :key="index"
+              @click="removeSelection('categoryType', index)">
               {{ category }} <b>x</b>
             </div>
           </div>
@@ -449,36 +550,38 @@ function topContainerGridPercentages() {
       </div>
 
       <div class="top-container-child">
-        <span
-          :class="userSelected.length > 0 ? 'user2' : 'user'"
-          :style="{ visibility: hideUser ? 'hidden' : 'visible' }"
-          >User:</span
-        >
+        <span :class="userSelected.length > 0 ? 'user2' : 'user'"
+          :style="{ visibility: hideUser ? 'hidden' : 'visible' }">User:</span>
 
         <div class="top-container-child-dropdown">
-          <CustomDropDown
-            :style="{ visibility: hideUser ? 'hidden' : 'visible' }"
-            :variants="userOptions"
-            @update:selectedOptions="handleSelectedUsers"
-            :canAddInDropdown="false"
-            :input-placeholder="`Select your users...`"
-            :clear-all="clearAllDropdownValues"
-            :width-in-vw="13"
-            :height-in-vh="5"
-            :selectedObjects="stringifyOptions('user')"
-          >
+          <CustomDropDown :style="{ visibility: hideUser ? 'hidden' : 'visible' }" :variants="userOptions"
+            @update:selectedOptions="handleSelectedUsers" :canAddInDropdown="false"
+            :input-placeholder="`Select your users...`" :clear-all="clearAllDropdownValues" :width-in-vw="13"
+            :height-in-vh="5" :selectedObjects="stringifyOptions('user')">
           </CustomDropDown>
 
           <div class="display-container">
-            <div
-              class="display-items-container"
-              v-for="(user, index) in userSelected"
-              :key="index"
-              @click="removeSelection('userType', index)"
-            >
+            <div class="display-items-container" v-for="(user, index) in userSelected" :key="index"
+              @click="removeSelection('userType', index)">
               {{ user }} <b>x</b>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="top-container-child">
+        <span :class="statusSelected.length > 0 ? 'status2' : 'status'">Rating:</span>
+        <div class="rating" style="overflow: hidden" @mouseenter="onMountStars()">
+          <i class="star" @click="setRating(1)" @mouseenter="starsEventListener(1), ratingSet.ratingNumber = 1"
+            @mouseleave="leaveStar(1)"></i>
+          <i class="star" @click="setRating(2)" @mouseenter="starsEventListener(2), ratingSet.ratingNumber = 2"
+            @mouseleave="leaveStar(2)"></i>
+          <i class="star" @click="setRating(3)" @mouseenter="starsEventListener(3), ratingSet.ratingNumber = 3"
+            @mouseleave="leaveStar(3)"></i>
+          <i class="star" @click="setRating(4)" @mouseenter="starsEventListener(4), ratingSet.ratingNumber = 4"
+            @mouseleave="leaveStar(4)"></i>
+          <i class="star" @click="setRating(5)" @mouseenter="starsEventListener(5), ratingSet.ratingNumber = 5"
+            @mouseleave="leaveStar(5)"></i>
         </div>
       </div>
     </div>
@@ -491,19 +594,11 @@ function topContainerGridPercentages() {
           <div class="date-input">
             <div>
               <span class="from-date"> From: </span>
-              <CustomInput
-                v-model="selectedDateFrom"
-                type="date"
-                class="date-picker"
-              />
+              <CustomInput v-model="selectedDateFrom" type="date" class="date-picker" />
             </div>
             <div>
               <span class="to-date"> To: </span>
-              <CustomInput
-                v-model="selectedDateTo"
-                type="date"
-                class="date-picker"
-              />
+              <CustomInput v-model="selectedDateTo" type="date" class="date-picker" />
             </div>
           </div>
         </fieldset>
@@ -517,9 +612,52 @@ function topContainerGridPercentages() {
 </template>
 
 <style scoped>
+.star {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAABQCAYAAAAZQFV3AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABOFJREFUeNrsmEFoHFUYx9/MdHfTJRKzUhBaFiL1YghZCFQUIV6UQJuLWCgr8eKpIoiFSqsHQYrmYj14KHqxKAl6MbA5eCgKRVAMBhpCwIJQCETRQzTsNtnO7s74+17fbGc3M7OzZhUsHfjzdvd97/++973vff99Y/m+rwb5WL0Idz60h2nckTc8Nw2hncLmAnhtIB7i3VGan8VD8Dhebh+U8FOaX8Bh4EB48R8TQlai+QnkgMTxD/AYpFt9EULk0EyBD8Dn4BPT9TZ4CrwD6Wos4V+XrUdpXzQk4tUEkAFXwNUu+1fAWWO7anADLDLJTkCYpf0K3DQe3Ui5oUI6B8ShlyBstZfMMiXoX4MV8GZKQgnJcXA6nKPtGJoE/gZ8Cy6mIJPwnIJsL3ZTIB2h+U6WANZjyE6Aj8Cz3WT7TooJ7HUwneDdc+BaFFnc0SuCzQTCTWOT+iwfN6cjWJ6clo9NzOS5Bcb6IZTZj5pU+syEYNV8XzA2Y6lOCptyhGbDeDFPnJa6TlGZ5rxJ/nxkSRPCACR5EUyHf4sCNjOgENVn/ecVe+CEy8vLWgJmZ2fd1IRra2vxSbe5eYlmu1gsXo6zmZycTKcpkEn6vC61kM+FQYiUeDdvauP5Ay0ZjyIlgKVv9bVkiBwQVJRX2YwWkKLxrhxB+qYSPaxUKrESANHVrh2PlQAzqSbskAA6UkkA5B0SICvRSzb5ddrMWu4jh8umSLwckLVjSKClWJ6SwsrM76fwLpCAM4x1I9OGjhrN8+AkAyYSyGTDnhEHjCPxeYhBagmIIvtXJOBQkgSY5Z01/76umAy4lbpiG5IqzQuG6Alz9LLmf+IP5hh+AfmxnoSQdUgAg5a6JuuQgMiSFi7fJHkR9JQAbGbA/SoBi4uLWgLK5XIqCdBpkyQBZne3sTm4BGxsbLQlgM+DkYBsNjucyWQKaSXATvCuZFnWHIQqlxMVUOeMx/0RMsgBWgIgcyBVgqwwIwH0JUvAwsJChwQwuOQ4jrJtO/CsfQBc11We56lWqyXfOySALNgJdlmuWzNSB/P5vBKyyJnxMjxBs9mc2tvbEye+DN1l7uYhuaZvAXg1LaQyOOkRL3d3d8XLishHOEd1DMfHx7UEYLjCrCop2aXP2Mht4QxjoyWADi0BxGddZm80GjpWYSL5TfpkYnHAOBK/yxhoCZAl1et1PbharWrUajX9m/SJBESRJUlAr6fvW0CvZyyxOIQPN4kbnv1mlwQERGPhMbHli/Q5Yv5lSdDnSYelrlLWIQGRJS1cvjk1RdBTArCZAferBPT7IkjvcuP7t3pKADaxEpB5+r10FXv3x3kKqqUlgM+DkQB76OFhKzdycAnAo5KynTlraFTZQ4/gqH3ursd9EjLIAVoC7KGCAxFWNqSjWgLoS5aAfS+C7EzJcrLKOjSkrNwoFu0ToPz6n8pv3dFQXjPyRdA9CbDsk/ZDx5SQxWiAsg4X7vE361NedQsn/P0SELwIgmzaHiZMtpMcKK+pWlUuVF6j0v0iSMcw/+QFLQF+y13xbv/GpF4CWUt5tV+FTEsAY6MlgA4tASxlnaUo362yLGLlh2Lo1iCjj4nFAeNI/H9sDHbYxesEfcK//XvSoq9Fkf0/JCDqDWfV3I+TJGCLne19CzAvgtoS8OBF0APC6OdvAQYAj2xzC/IfXBsAAAAASUVORK5CYII=");
+  background-position: left -0.2vh;
+  background-size: 3vh;
+  width: 30px;
+  height: 25px;
+  float: left;
+  cursor: pointer;
+}
+
+.rating {}
+
+.stars-outer {
+  position: relative;
+  width: 80px;
+  box-sizing: border-box;
+  margin-top: 5px;
+  margin-left: 1.5vw;
+}
+
+.stars-inner {
+  top: 0;
+  box-sizing: border-box;
+  position: absolute;
+  overflow: hidden;
+}
+
+.stars-outer::before {
+  content: "\f005 \f005 \f005 \f005 \f005";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  color: #ccc;
+  width: 100%;
+}
+
+.stars-inner::before {
+  content: "\f005 \f005 \f005 \f005 \f005";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  color: #eb9224;
+}
+
 b {
   color: #ffa941;
 }
+
 span {
   font-weight: 700;
 }
@@ -570,7 +708,7 @@ span {
   border: 1px solid slategray;
 }
 
-.date-input > div {
+.date-input>div {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -605,7 +743,7 @@ span {
   margin-top: 3vh;
   display: grid;
   gap: 10px;
-  grid-template-rows: 10% 10% 10% 10% 10% 20%;
+  grid-template-rows: 10% 10% 10% 10% 10% 10% 10%;
 }
 
 .top-container-status-activated {
@@ -615,7 +753,7 @@ span {
   margin-top: 3vh;
   display: grid;
   gap: 10px;
-  grid-template-rows: 10% 10% 10% 20% 10% 20%;
+  grid-template-rows: 10% 10% 10% 17% 10% 10% 10%;
 }
 
 .top-container-category-activated {
@@ -625,7 +763,17 @@ span {
   margin-top: 3vh;
   display: grid;
   gap: 10px;
-  grid-template-rows: 10% 10% 10% 10% 20% 20%;
+  grid-template-rows: 10% 10% 10% 10% 17% 10% 10%;
+}
+
+.top-container-user-activated {
+  margin-left: auto;
+  margin-right: auto;
+  width: 18vw;
+  margin-top: 3vh;
+  display: grid;
+  gap: 10px;
+  grid-template-rows: 10% 10% 10% 10% 10% 17% 10%;
 }
 
 .top-container-status-and-category-activated {
@@ -635,16 +783,46 @@ span {
   margin-top: 3vh;
   display: grid;
   gap: 10px;
-  grid-template-rows: 10% 10% 10% 20% 20% 20%;
+  grid-template-rows: 10% 10% 10% 17% 17% 10% 10%;
+}
+
+.top-container-status-and-user-activated {
+  margin-left: auto;
+  margin-right: auto;
+  width: 18vw;
+  margin-top: 3vh;
+  display: grid;
+  gap: 10px;
+  grid-template-rows: 10% 10% 10% 17% 10% 17% 10%;
+}
+
+.top-container-user-and-category-activated {
+  margin-left: auto;
+  margin-right: auto;
+  width: 18vw;
+  margin-top: 3vh;
+  display: grid;
+  gap: 10px;
+  grid-template-rows: 10% 10% 10% 10% 17% 17% 10%;
+}
+
+.top-container-user-and-status-and-category-activated {
+  margin-left: auto;
+  margin-right: auto;
+  width: 18vw;
+  margin-top: 3vh;
+  display: grid;
+  gap: 10px;
+  grid-template-rows: 10% 10% 10% 17% 17% 17% 10%;
 }
 
 .low-container {
   display: grid;
-  grid-template-rows: 70% 30%;
+  grid-template-rows: 50% 40%;
   width: 18vw;
   margin-left: auto;
   margin-right: auto;
-  margin-bottom: 30vh;
+
 }
 
 .side-panel-container {

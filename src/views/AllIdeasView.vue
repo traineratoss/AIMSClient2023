@@ -33,6 +33,7 @@ const inputText = ref("");
 const inputStatus = ref([]);
 const inputCategory = ref([]);
 const inputUser = ref([]);
+const inputRating = ref(0);
 const inputSelectedDateFrom = ref("");
 const inputSelectedDateTo = ref("");
 const isAdmin = ref("");
@@ -48,6 +49,7 @@ let currentUser = [];
 let currentSelectedDateFrom = "";
 let currentSelectedDateTo = "";
 let currentUserRole = "";
+let currentRating = 0;
 
 // fade images variables
 const ideasTransitionContainer = ref(null);
@@ -82,6 +84,7 @@ onMounted(async () => {
     currentStatus,
     currentCategory,
     currentUser,
+    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     currentPage.value - 1,
@@ -289,6 +292,7 @@ async function changePage(pageNumber) {
     currentStatus,
     currentCategory,
     currentUser,
+    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     pageNumber - 1,
@@ -347,6 +351,7 @@ async function updateSortOrder() {
         currentStatus,
         currentCategory,
         currentUser,
+        currentRating,
         currentSelectedDateFrom,
         currentSelectedDateTo,
         currentPage.value - 1,
@@ -397,6 +402,7 @@ async function updateSortOrder() {
         currentStatus,
         currentCategory,
         currentUser,
+        currentRating,
         currentSelectedDateFrom,
         currentSelectedDateTo,
         currentPage.value - 1,
@@ -463,6 +469,7 @@ async function loadRecievedIdeas(mostCommentedIdeas) {
         currentStatus,
         currentCategory,
         currentUser,
+        currentRating,
         currentSelectedDateFrom,
         currentSelectedDateTo,
         currentPage.value - 1,
@@ -542,6 +549,7 @@ async function updateIdeas(filteredIdeas) {
       inputStatus.value,
       inputCategory.value,
       inputUser.value,
+      inputRating.value,
       inputSelectedDateFrom.value,
       inputSelectedDateTo.value,
       currentPage.value - 1,
@@ -599,6 +607,7 @@ async function changeDisplay(pageSize) {
       currentStatus,
       currentCategory,
       currentUser,
+      currentRating,
       currentSelectedDateFrom,
       currentSelectedDateTo,
       currentPage.value - 1,
@@ -647,6 +656,7 @@ const onPassInputVariables = (
   inputStatusParam,
   inputCategoryParam,
   inputUserParam,
+  inputRatingParam,
   inputSelectedDateFromParam,
   inputSelectedDateToParam
 ) => {
@@ -655,6 +665,7 @@ const onPassInputVariables = (
   inputStatus.value = inputStatusParam;
   inputCategory.value = inputCategoryParam;
   inputUser.value = inputUserParam;
+  inputRating.value = inputRatingParam;
   inputSelectedDateFrom.value = inputSelectedDateFromParam;
   inputSelectedDateTo.value = inputSelectedDateToParam;
 };
