@@ -17,6 +17,7 @@ import {
   getImageByIdeaId,
   getImageById,
   addRatingToIdea,
+  deleteIdeaRatingFromUser
 } from "../services/idea.service";
 import { getCurrentUsername, getCurrentRole } from "../services/user_service";
 
@@ -144,10 +145,10 @@ onMounted(async () => {
 
 });
 
-// using deep because of the nested propreties
-watch(ratingSet, (newValue) => {
+// using deep because of the nested propreties, this is used for removing a rating if we put 0 stars
+watch(ratingSet, async (newValue) => {
   if (!newValue.isSet) {
-    
+    await deleteIdeaRatingFromUser(ideaId, getCurrentUsername());
   }
 }, { deep: true })
 

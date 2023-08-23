@@ -215,6 +215,28 @@ async function addRatingToIdea(id, ratingNumber, username) {
   }
 }
 
+async function deleteIdeaRatingFromUser(id, username) {
+  const response = await fetch(API_URL + "/deleteRating?id=" + id + "&username=" + username, {
+    method: "DELETE",
+    mode: "cors",
+    cache: "no-cache",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    redirect: "follow",
+    referrerPolicy: "no-referrer",
+  });
+
+  if (!response.ok) {
+    const responseText = await response.text();
+    return responseText;
+  } else {
+    const json = await response.json();
+    return json;
+  }
+}
+
 async function updateIdea(id, title, text, status, categoryList, image) {
   const response = await fetch(API_URL + "/update?id=" + id, {
     method: "PATCH",
@@ -340,5 +362,6 @@ export {
   getImageById,
   getImageByIdeaId,
   getIdeaRatingAverage,
-  addRatingToIdea
+  addRatingToIdea,
+  deleteIdeaRatingFromUser
 };
