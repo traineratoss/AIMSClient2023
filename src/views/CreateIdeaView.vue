@@ -46,6 +46,12 @@ const onlyForDeleteCategories = ref([]);
 
 const ideaNotValid = ref(false);
 
+const stars = ref(null);
+const ratingSet = ref({
+  isSet: false,
+  ratingNumber: -1
+});
+
 const regex =
   /^(?=.*[A-Za-z0-9].*[A-Za-z0-9].*[A-Za-z0-9].*[A-Za-z0-9].*[A-Za-z0-9]).*$/;
 
@@ -105,6 +111,40 @@ watchEffect(() => {
     isWatchEffectExecuted.value = true;
   }
 });
+
+function starsEventListener() {
+  if (!ratingSet.value.isSet) {
+    console.log("h")
+    stars.value = document.querySelectorAll(".star");
+    stars.value.forEach((star, index) => {
+      star.addEventListener("mouseenter", () => {
+        if (index == 0) {
+          star.style.backgroundPosition = 'left -123px'
+        } else {
+          let number = index;
+          while (number >= 0) {
+            stars.value[number].style.backgroundPosition = 'left -123px';
+            number--;
+          }
+        }
+      });
+
+      star.addEventListener("mouseleave", () => {
+        if (index == 0) {
+          star.style.backgroundPosition = 'left -2px'
+        } else {
+          let number = index;
+          while (number >= 0) {
+            stars.value[number].style.backgroundPosition = 'left -2px';
+            number--;
+          }
+        }
+      });
+    });
+  } else {
+
+  }
+}
 
 //This function is very important since it checks if the component is gonna update or create an idea
 const isUpdatedIdeaEmpty = computed(() => {
@@ -319,16 +359,28 @@ async function createIdeaFunction() {
 
   if (titleErrorCheck) {
     titleError.value = "Please select a title...";
+    document.getElementById("title-input").className = "";
+    setTimeout(() => {
+      document.getElementById("title-input").className = "shake";
+    }, "10");
   } else {
     titleError.value = "";
   }
   if (textErrorCheck) {
     textError.value = "Please write some text...";
+    document.getElementById("textarea-id").className = "";
+    setTimeout(() => {
+      document.getElementById("textarea-id").className = "shake";
+    }, "10");
   } else {
     textError.value = "";
   }
   if (categoryErrorCheck) {
     categoryError.value = "Please select at least one category...";
+    document.getElementById("category-input").className = "input-width";
+    setTimeout(() => {
+      document.getElementById("category-input").className = "input-width shake";
+    }, "10");
   } else {
     categoryError.value = "";
   }
@@ -432,9 +484,9 @@ async function shouldDisableArrows() {
   }
 }
 
-function onMouseLeave() {}
+function onMouseLeave() { }
 
-function onMouseEnter() {}
+function onMouseEnter() { }
 
 function removeSelection(index) {
   if (!disableFields) {
@@ -442,6 +494,26 @@ function removeSelection(index) {
     categoriesSelected.value = categoriesSelected.value.filter(
       (category, index) => indexValue !== index
     );
+  }
+}
+
+function setRating(indexValue) {
+  stars.value = document.querySelectorAll(".star");
+  ratingSet.value.isSet = true;
+  ratingSet.value.ratingNumber = indexValue;
+
+  stars.value.forEach((star, index) => {
+    if (index < indexValue) {
+      star.style.backgroundPosition = 'left -123px'
+    }
+  })
+}
+
+let oneTimer = true;
+function onMountStars() {
+  if (oneTimer) {
+    starsEventListener();
+    oneTimer = false;
   }
 }
 </script>
@@ -458,52 +530,24 @@ function removeSelection(index) {
       <div class="input-container">
         <div class="idea">
           <label for="title-idea" class="label">Title:</label>
-          <CustomInput
-            v-model="inputValue"
-            :disabled="fieldsDisabled"
-            :maxlength="50"
-            :placeholder="
-              !titleError == '' ? titleError : 'Write a title here...'
-            "
-            :widthInPx="16"
-            style="background-color: rgba(255, 145, 153, 0.679)"
-            :class="titleError ? 'shake' : ''"
-            :style="
-              !titleError == ''
-                ? {
-                    'border-color': 'red',
-                    'background-color': 'rgb(255, 145, 153, 0.379)',
-                    'border-radius': '4px',
-                  }
-                : { 'background-color': 'white', 'border-radius': '4px' }
-            "
-          />
+          <CustomInput id="title-input" v-model="inputValue" :disabled="fieldsDisabled" :maxlength="50" :placeholder="!titleError == '' ? titleError : 'Write a title here...'
+            " :widthInPx="16" style="background-color: rgba(255, 145, 153, 0.679)" class="" :style="!titleError == ''
+    ? {
+      'border-color': 'red',
+      'background-color': 'rgb(255, 145, 153, 0.379)',
+      'border-radius': '4px',
+    }
+    : { 'background-color': 'white', 'border-radius': '4px' }
+    " />
         </div>
 
         <div class="idea">
-          <label
-            for="status-idea"
-            class="label"
-            @mouseleave="onMouseLeave"
-            @mouseenter="onMouseEnter"
-            >Status:</label
-          >
-          <select
-            v-model="statusValue"
-            :class="{ status: statusError }"
-            @mouseenter="onMouseEnter"
-            style="width: 16vw"
-            @mouseleave="onMouseLeave"
-            name="status-idea"
-            class="custom-select"
-            :disabled="fieldsDisabled"
-          >
+          <label for="status-idea" class="label" @mouseleave="onMouseLeave" @mouseenter="onMouseEnter">Status:</label>
+          <select v-model="statusValue" @mouseenter="onMouseEnter" style="width: 16vw" @mouseleave="onMouseLeave"
+            name="status-idea" class="custom-select" :disabled="fieldsDisabled">
             <option value="open">Open</option>
             <option value="draft">Draft</option>
-            <option
-              v-if="!isUpdatedIdeaEmpty && currentRole == 'ADMIN'"
-              value="implemented"
-            >
+            <option v-if="!isUpdatedIdeaEmpty && currentRole == 'ADMIN'" value="implemented">
               Implemented
             </option>
           </select>
@@ -512,49 +556,27 @@ function removeSelection(index) {
         <div class="idea">
           <label for="category-idea" class="label">Categories:</label>
 
-          <CustomDropDown
-            v-if="!showDeletePopup && !disableFields"
-            @update:selectedOptions="handleSelectedCategories"
-            :disabled="fieldsDisabled"
-            :variants="categoryOptions"
-            :canAddInDropdown="true"
-            :selectedObjects="stringifyCategory()"
-            :input-placeholder="
-              categoryError ? categoryError : 'Select your categories...'
-            "
-            class="input-width"
-            :width-in-vw="16"
-            v-bind:class="categoryError ? 'shake' : ''"
-            :error="categoryError"
-          >
+          <CustomDropDown id="category-input" v-if="!showDeletePopup && !disableFields"
+            @update:selectedOptions="handleSelectedCategories" :disabled="fieldsDisabled" :variants="categoryOptions"
+            :canAddInDropdown="true" :selectedObjects="stringifyCategory()" :input-placeholder="categoryError ? categoryError : 'Select your categories...'
+              " class="input-width" :width-in-vw="16" :error="categoryError">
           </CustomDropDown>
-          <input
-            v-if="showDeletePopup || disableFields || ideaNotValid"
-            v-model="onlyForDeleteCategories"
-            :disabled="disableFields"
-            style="
+          <input v-if="showDeletePopup || disableFields || ideaNotValid" v-model="onlyForDeleteCategories"
+            :disabled="disableFields" style="
               width: 15.8vw;
               height: 2vh;
               background-color: rgba(255, 255, 255, 0.597);
               border-radius: 3px;
               border: 1px slategray;
               color: black;
-            "
-          />
+            " />
         </div>
 
         <div class="display-categories-container">
-          <div
-            class="display-categories"
-            v-for="(category, index) in categoriesSelected"
-            :key="index"
-            :style="
-              !disableFields
-                ? { 'background-color': 'white' }
-                : { 'background-color': '#cccccc' }
-            "
-            @click="removeSelection(index)"
-          >
+          <div class="display-categories" v-for="(category, index) in categoriesSelected" :key="index" :style="!disableFields
+            ? { 'background-color': 'white' }
+            : { 'background-color': '#cccccc' }
+            " @click="removeSelection(index)">
             {{ category }} <b>x</b>
           </div>
         </div>
@@ -563,43 +585,30 @@ function removeSelection(index) {
       <div class="idea-text">
         <div class="text-input-wrapper">
           <div class="input-text-container">
-            <textarea
-              v-model="textValue"
-              :disabled="fieldsDisabled"
-              :maxlength="500"
-              :placeholder="
-                !textError == '' ? textError : 'Write a text here...'
-              "
-              id="textarea-id"
-              v-bind:class="textError ? 'shake' : ''"
-              :style="
-                !textError == ''
-                  ? {
-                      'border-color': 'red',
-                      'background-color': 'rgb(255, 145, 153, 0.479)',
-                      'border-radius': '2px',
-                    }
-                  : { 'background-color': 'white', 'border-radius': '2px' }
-              "
-            >
+            <textarea v-model="textValue" :disabled="fieldsDisabled" :maxlength="500" :placeholder="!textError == '' ? textError : 'Write a text here...'
+              " id="textarea-id" :style="!textError == ''
+    ? {
+      'border-color': 'red',
+      'background-color': 'rgb(255, 145, 153, 0.479)',
+      'border-radius': '2px',
+    }
+    : { 'background-color': 'white', 'border-radius': '2px' }
+    ">
             </textarea>
           </div>
           <div class="input-bottom">
-            <p
-              id="maxlength-textarea"
-              :style="{
-                color: textValue
-                  ? textValue.length == 500
-                    ? 'red'
-                    : 'slategray'
-                  : 'slategray',
-                opacity: textValue
-                  ? textValue.length == 500
-                    ? '100'
-                    : '70%'
-                  : '70%',
-              }"
-            >
+            <p id="maxlength-textarea" :style="{
+              color: textValue
+                ? textValue.length == 500
+                  ? 'red'
+                  : 'slategray'
+                : 'slategray',
+              opacity: textValue
+                ? textValue.length == 500
+                  ? '100'
+                  : '70%'
+                : '70%',
+            }">
               {{ textValue ? textValue.length : 0 }} / 500
             </p>
           </div>
@@ -608,31 +617,15 @@ function removeSelection(index) {
 
       <div class="carousel-container">
         <div class="idea-carousel">
-          <CarouselImage
-            class="carousel-image"
-            :images="slideImages"
-            @current-index="getCurrentIndex"
-            @selected-image-values="getSelectedImageValues"
-            :initialCurrentIndex="initialCurrentIndex()"
-            :disabledArrow="shouldDisableArrows()"
-            :imageHeightPercentage="100"
-          />
+          <CarouselImage class="carousel-image" :images="slideImages" @current-index="getCurrentIndex"
+            @selected-image-values="getSelectedImageValues" :initialCurrentIndex="initialCurrentIndex()"
+            :disabledArrow="shouldDisableArrows()" :imageHeightPercentage="100" />
         </div>
         <div class="add-image">
-          <input
-            type="file"
-            id="upload"
-            hidden
-            :disabled="fieldsDisabled"
-            ref="uploadedImage"
-            v-on:change="uploadImage($event)"
-          />
-          <label
-            for="upload"
-            class="add-image-idea"
-            v-if="!deletePopup && !disableFields"
-            style="display: flex; align-items: center"
-          >
+          <input type="file" id="upload" hidden :disabled="fieldsDisabled" ref="uploadedImage"
+            v-on:change="uploadImage($event)" />
+          <label for="upload" class="add-image-idea" v-if="!deletePopup && !disableFields"
+            style="display: flex; align-items: center">
             Upload Image
             <span class="material-symbols-outlined" style="margin-left: 5px">
               attach_file
@@ -642,30 +635,25 @@ function removeSelection(index) {
       </div>
 
       <div class="create-container">
-        <CustomButton
-          id="create-idea"
-          @click="shouldCreateOrUpdate"
-          :disabled="fieldsDisabled"
-          v-if="!deletePopup && !disableFields"
-          :height-in-px="40"
-          :width-in-px="300"
-        >
+        <CustomButton id="create-idea" @click="shouldCreateOrUpdate" :disabled="fieldsDisabled"
+          v-if="!deletePopup && !disableFields" :height-in-px="40" :width-in-px="300">
           {{ isUpdatedIdeaEmpty ? "Create Idea" : "Update Idea" }}
         </CustomButton>
-        <CustomDialog
-          ref="customDialog"
-          :open="deletePopup || ideaNotValid"
-          :title="
-            !ideaNotValid
-              ? `Are you sure you want to delete '${currentIdeaTitle}'?`
-              : `This idea doesn't exist anymore`
-          "
-          :message="
-            !ideaNotValid
-              ? 'This item will be deleted immediately. You can\'t undo this action!'
-              : 'Please go back to the main page.'
-          "
-        >
+        <div class="rate-idea-text" v-if="disableFields"> RATE THIS IDEA</div>
+        <div class="rating" style="overflow: hidden;" v-if="disableFields" @mouseenter="onMountStars()">
+          <i class="star" @click="setRating(1)" @mouseenter="starsEventListener()"></i>
+          <i class="star" @click="setRating(2)" @mouseenter="starsEventListener()"></i>
+          <i class="star" @click="setRating(3)" @mouseenter="starsEventListener()"></i>
+          <i class="star" @click="setRating(4)" @mouseenter="starsEventListener()"></i>
+          <i class="star" @click="setRating(5)" @mouseenter="starsEventListener()"></i>
+        </div>
+        <CustomDialog ref="customDialog" :open="deletePopup || ideaNotValid" :title="!ideaNotValid
+          ? `Are you sure you want to delete '${currentIdeaTitle}'?`
+          : `This idea doesn't exist anymore`
+          " :message="!ideaNotValid
+    ? 'This item will be deleted immediately. You can\'t undo this action!'
+    : 'Please go back to the main page.'
+    ">
           <div class="dialog-actions" v-if="deletePopup && !ideaNotValid">
             <button @click="handleCancel">Cancel</button>
             <button @click="handleConfirm">Confirm</button>
@@ -680,12 +668,43 @@ function removeSelection(index) {
 </template>
 
 <style scoped>
+#title-input {
+  border-radius: 2px;
+  border: 1px solid white;
+  background-color: white;
+  padding: 5px;
+  box-sizing: border-box;
+  cursor: text;
+}
+
+.rate-idea-text {
+  font-size: large;
+  font-weight: 650;
+  margin-bottom: 2vh;
+}
+
+.rating {
+  margin-bottom: 12vh;
+}
+
+.star {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAABQCAYAAAAZQFV3AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABOFJREFUeNrsmEFoHFUYx9/MdHfTJRKzUhBaFiL1YghZCFQUIV6UQJuLWCgr8eKpIoiFSqsHQYrmYj14KHqxKAl6MbA5eCgKRVAMBhpCwIJQCETRQzTsNtnO7s74+17fbGc3M7OzZhUsHfjzdvd97/++973vff99Y/m+rwb5WL0Idz60h2nckTc8Nw2hncLmAnhtIB7i3VGan8VD8Dhebh+U8FOaX8Bh4EB48R8TQlai+QnkgMTxD/AYpFt9EULk0EyBD8Dn4BPT9TZ4CrwD6Wos4V+XrUdpXzQk4tUEkAFXwNUu+1fAWWO7anADLDLJTkCYpf0K3DQe3Ui5oUI6B8ShlyBstZfMMiXoX4MV8GZKQgnJcXA6nKPtGJoE/gZ8Cy6mIJPwnIJsL3ZTIB2h+U6WANZjyE6Aj8Cz3WT7TooJ7HUwneDdc+BaFFnc0SuCzQTCTWOT+iwfN6cjWJ6clo9NzOS5Bcb6IZTZj5pU+syEYNV8XzA2Y6lOCptyhGbDeDFPnJa6TlGZ5rxJ/nxkSRPCACR5EUyHf4sCNjOgENVn/ecVe+CEy8vLWgJmZ2fd1IRra2vxSbe5eYlmu1gsXo6zmZycTKcpkEn6vC61kM+FQYiUeDdvauP5Ay0ZjyIlgKVv9bVkiBwQVJRX2YwWkKLxrhxB+qYSPaxUKrESANHVrh2PlQAzqSbskAA6UkkA5B0SICvRSzb5ddrMWu4jh8umSLwckLVjSKClWJ6SwsrM76fwLpCAM4x1I9OGjhrN8+AkAyYSyGTDnhEHjCPxeYhBagmIIvtXJOBQkgSY5Z01/76umAy4lbpiG5IqzQuG6Alz9LLmf+IP5hh+AfmxnoSQdUgAg5a6JuuQgMiSFi7fJHkR9JQAbGbA/SoBi4uLWgLK5XIqCdBpkyQBZne3sTm4BGxsbLQlgM+DkYBsNjucyWQKaSXATvCuZFnWHIQqlxMVUOeMx/0RMsgBWgIgcyBVgqwwIwH0JUvAwsJChwQwuOQ4jrJtO/CsfQBc11We56lWqyXfOySALNgJdlmuWzNSB/P5vBKyyJnxMjxBs9mc2tvbEye+DN1l7uYhuaZvAXg1LaQyOOkRL3d3d8XLishHOEd1DMfHx7UEYLjCrCop2aXP2Mht4QxjoyWADi0BxGddZm80GjpWYSL5TfpkYnHAOBK/yxhoCZAl1et1PbharWrUajX9m/SJBESRJUlAr6fvW0CvZyyxOIQPN4kbnv1mlwQERGPhMbHli/Q5Yv5lSdDnSYelrlLWIQGRJS1cvjk1RdBTArCZAferBPT7IkjvcuP7t3pKADaxEpB5+r10FXv3x3kKqqUlgM+DkQB76OFhKzdycAnAo5KynTlraFTZQ4/gqH3ursd9EjLIAVoC7KGCAxFWNqSjWgLoS5aAfS+C7EzJcrLKOjSkrNwoFu0ToPz6n8pv3dFQXjPyRdA9CbDsk/ZDx5SQxWiAsg4X7vE361NedQsn/P0SELwIgmzaHiZMtpMcKK+pWlUuVF6j0v0iSMcw/+QFLQF+y13xbv/GpF4CWUt5tV+FTEsAY6MlgA4tASxlnaUo362yLGLlh2Lo1iCjj4nFAeNI/H9sDHbYxesEfcK//XvSoq9Fkf0/JCDqDWfV3I+TJGCLne19CzAvgtoS8OBF0APC6OdvAQYAj2xzC/IfXBsAAAAASUVORK5CYII=");
+  background-position: left -2px;
+  background-size: 4vh;
+  width: 37px;
+  height: 36px;
+  float: left;
+  cursor: pointer;
+}
+
 #back-button:hover {
   background-color: #f8920b;
 }
+
 .comment-input-bottom {
   width: 29vw;
 }
+
 .text-input-wrapper {
   display: flex;
   align-items: center;
@@ -767,7 +786,7 @@ b {
   margin-top: 20px;
 }
 
-.carousel-image > img {
+.carousel-image>img {
   border: 1px solid slategray;
 }
 
@@ -838,6 +857,7 @@ textarea {
   border-radius: 6px;
   height: 1.9vh;
 }
+
 .add-image-idea:hover {
   background-color: rgba(128, 128, 128, 0.753);
 }

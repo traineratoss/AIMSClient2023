@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { deleteComment } from "../services/comment.service";
 import { getCurrentUsername, getCurrentRole } from "../services/user_service";
 import CustomModal from "./CustomModal.vue";
+import TermsAndConditionsModal from "./TermsAndConditionsModal.vue";
 
 const props = defineProps({
   commentId: "",
@@ -34,6 +35,7 @@ const commentText = ref("");
 const buttonSelected = ref(false);
 const showModal = ref(false);
 const maxlength = 500;
+const replyPostingError = ref(false);
 
 onMounted(async () => {
   currentUserRole.value = getCurrentRole();
@@ -84,11 +86,39 @@ function toggleReplies() {
   emits("toggleReplies");
 }
 
-function postReply(username, parentId, commentText) {
-  emits("postReply", username, parentId, commentText);
-  clearInput();
-  showReplies();
-  replyToggled.value = true;
+function verifyString(inputString) {
+  const letterRegex = /[a-zA-Z]/;
+  const numberRegex = /[0-9]/;
+  const symbolRegex = /[^a-zA-Z0-9\s]/;
+
+  const containsLetters = letterRegex.test(inputString);
+  const containsNumbers = numberRegex.test(inputString);
+  const containsSymbols = symbolRegex.test(inputString);
+
+  const result = containsLetters || containsNumbers || containsSymbols;
+
+  return result;
+}
+
+watch(postToggle, (newValue) => {
+  if (!newValue) replyPostingError.value = false;
+});
+
+function postReplyFunction(username, parentId, commentText) {
+  if (verifyString(commentText)) {
+    replyPostingError.value = false;
+    emits("postReply", username, parentId, commentText);
+    clearInput();
+    showReplies();
+    replyToggled.value = true;
+  } else {
+    clearInput();
+    replyPostingError.value = true;
+    document.getElementById("insert-reply-textarea").className = "";
+    setTimeout(() => {
+      document.getElementById("insert-reply-textarea").className = "shake";
+    }, "10");
+  }
 }
 
 function clearInput() {
@@ -212,10 +242,24 @@ function clearInput() {
     </div>
     <div class="reply-input-container" v-if="postToggle">
       <textarea
-        :maxlength="maxlength"
-        v-model="commentText"
-        placeholder="  Write your reply here .."
         id="insert-reply-textarea"
+        v-model="commentText"
+        :maxlength="maxlength"
+        :placeholder="
+          replyPostingError
+            ? 'Please write your reply here...'
+            : 'Write your reply here...'
+        "
+        class=""
+        :style="
+          !replyPostingError == ''
+            ? {
+                'border-color': 'red',
+                'background-color': 'rgb(255, 145, 153, 0.379)',
+                'border-radius': '4px',
+              }
+            : { 'background-color': 'white', 'border-radius': '4px' }
+        "
       >
       </textarea>
       <div class="chars">
@@ -224,9 +268,14 @@ function clearInput() {
         <button
           id="postButton"
           @click="
-            postReply(currentUser, props.parentId, commentText);
-            postToggle = !postToggle;
-            buttonSelected = !buttonSelected;
+            postReplyFunction(currentUser, props.parentId, commentText);
+            if (replyPostingError) {
+              postToggle = true;
+              buttonSelected = true;
+            } else {
+              postToggle = !postToggle;
+              buttonSelected = !buttonSelected;
+            }
           "
         >
           Post reply
@@ -237,6 +286,34 @@ function clearInput() {
 </template>
 
 <style scoped>
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-3px);
+  }
+
+  50% {
+    transform: translateX(3px);
+  }
+
+  75% {
+    transform: translateX(-3px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.shake {
+  animation-name: shake;
+  animation-duration: 0.4s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+}
 .comment-container {
   background-color: rgb(255, 255, 255);
   border-radius: 5px;
@@ -317,12 +394,23 @@ function clearInput() {
   max-width: 29vw;
   min-width: 25vw;
   border-radius: 5px;
-  overflow-y: auto;
+  overflow-y: scroll;
   margin-bottom: 10px;
   overflow-x: hidden;
   padding-right: 7px;
   word-wrap: break-word;
 }
+.comment-text-container::-webkit-scrollbar {
+  display: block;
+  width: 5px;
+}
+
+.comment-text-container::-webkit-scrollbar-thumb {
+  background-color: #ffa941;
+  border-radius: 5px;
+  border: 1px solid slategray;
+}
+
 .footer-container {
   display: grid;
   grid-template-columns: 25% 50% 25%;
@@ -384,6 +472,8 @@ button:hover {
 }
 
 #insert-reply-textarea {
+  padding-left: 7px;
+  padding-top: 5px;
   resize: none;
   min-height: 5vh;
   max-width: 29vw;

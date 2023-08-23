@@ -39,12 +39,12 @@ const props = defineProps({
   },
   widthInVw: {
     type: Number,
-    default: null
+    default: null,
   },
   heightInVh: {
     type: Number,
-    default: null
-  }
+    default: null,
+  },
 });
 
 const clearAllDropdownValues = ref(false);
@@ -69,8 +69,10 @@ onMounted(async () => {
 // checking every little modification for the selected Objects and setting its reactive value to be equal to it
 watch(
   () => JSON.parse(props.selectedObjects),
-  (newValue) => { allSelectedVariantsReactive.value = newValue}
-)
+  (newValue) => {
+    allSelectedVariantsReactive.value = newValue;
+  }
+);
 
 watchEffect(() => {
   //while its still loading, i check if the initialselectedcategories received the prop corectly from the parent
@@ -200,23 +202,46 @@ function getInputPlaceholder() {
 
 <template>
   <div class="combo-box">
-    <input type="text" ref="comboInput" class="input-dropdown" :placeholder="getInputPlaceholder()"
-      :disabled="props.disabled" @keydown.enter="handleInputKeyPress" @input="handleInputBoxChange"
-      @mouseleave="onMouseLeave" :style="{
-        height: props.heightInVh ? props.heightInVh/2 + 'vh' : {},
-        width: props.widthInVw ? props.widthInVw + 'vw' : {}
-      }" 
+    <input
+      type="text"
+      ref="comboInput"
+      class="input-dropdown"
+      :placeholder="getInputPlaceholder()"
+      :disabled="props.disabled"
+      @keydown.enter="handleInputKeyPress"
+      @input="handleInputBoxChange"
+      @mouseleave="onMouseLeave"
+      :style="{
+        height: props.heightInVh ? props.heightInVh / 2 + 'vh' : {},
+        width: props.widthInVw ? props.widthInVw + 'vw' : {},
+      }"
       v-bind:style="
-              error !== ''
-                ? { 'border-color': 'red', 'background-color': 'rgb(255, 145, 153, 0.379)' }
-                : {  'background-color': 'white' }
-            "/>
-    <div v-show="isDropdownVisible && !props.disabled" class="dropdown" ref="dropdown" id="dropdown"
-      @mouseenter="onMouseEnter" @mouseleave="onMouseLeave" :style="{
-        width: props.widthInVw ? props.widthInVw + 'vw' : {}
-      }">
-      <label v-for="(variant,index) in allVariantsReactive" :key="index">
-        <input type="checkbox" :value="variant" :checked="isVariantSelected(variant)" @change="handleCheckboxChange" />
+        error !== ''
+          ? {
+              'border-color': 'red',
+              'background-color': 'rgb(255, 145, 153, 0.379)',
+            }
+          : { 'background-color': 'white' }
+      "
+    />
+    <div
+      v-show="isDropdownVisible && !props.disabled"
+      class="dropdown"
+      ref="dropdown"
+      id="dropdown"
+      @mouseenter="onMouseEnter"
+      @mouseleave="onMouseLeave"
+      :style="{
+        width: props.widthInVw ? props.widthInVw + 'vw' : {},
+      }"
+    >
+      <label v-for="(variant, index) in allVariantsReactive" :key="index">
+        <input
+          type="checkbox"
+          :value="variant"
+          :checked="isVariantSelected(variant)"
+          @change="handleCheckboxChange"
+        />
         {{ variant }}
       </label>
     </div>
@@ -242,7 +267,7 @@ function getInputPlaceholder() {
 .dropdown {
   position: absolute;
   top: 10;
-  left: 0;
+  left: 1;
   background-color: #fff;
   border: 1px solid #ccc;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -255,20 +280,20 @@ function getInputPlaceholder() {
 }
 
 .dropdown::-webkit-scrollbar {
-    display: block;
-    height: 8px;
-    cursor: pointer;
-    width: 6px;
+  display: block;
+  height: 8px;
+  cursor: pointer;
+  width: 6px;
 }
 
 .dropdown::-webkit-scrollbar-thumb {
-    background-color: #eb9224;
-    border-radius: 5px;
-    border: 1px solid slategray;
-    cursor: pointer;
+  background-color: #eb9224;
+  border-radius: 5px;
+  border: 1px solid slategray;
+  cursor: pointer;
 }
 
-.dropdown label{
+.dropdown label {
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -283,7 +308,7 @@ function getInputPlaceholder() {
   border-radius: 3px;
 }
 
-.input-dropdown:hover{
+.input-dropdown:hover {
   border: 1px solid slategray;
 }
 

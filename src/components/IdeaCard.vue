@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import CustomComment from "../components/CustomComment.vue";
 import router from "../router";
 import {
@@ -9,7 +9,11 @@ import {
   postReply,
 } from "../services/comment.service";
 import { getCurrentUsername, getCurrentRole } from "../services/user_service";
-import { getIdea } from "../services/idea.service";
+import {
+  getIdea,
+  getIdeaRatingAverage,
+  loadPagedIdeas,
+} from "../services/idea.service";
 
 const props = defineProps({
   title: "",
@@ -24,7 +28,12 @@ const props = defineProps({
   image: "",
 });
 
-const emits = defineEmits(["commentCounterAdd", "commentCounterSub", "ideaNotValid", "revealOnScroll"]);
+const emits = defineEmits([
+  "commentCounterAdd",
+  "commentCounterSub",
+  "ideaNotValid",
+  "revealOnScroll",
+]);
 
 const allLoadedComments = ref([]);
 const commentText = ref([]);
@@ -35,13 +44,21 @@ const arrayOfCommentIdAndReplyPair = ref([]);
 const isSelected = ref(false);
 const maxCommentLength = 500;
 const numberOfDisplayedComments = ref(10);
+const ratingAverage = ref(0);
+
+onMounted(async () => {
+  const data = await getIdeaRatingAverage(props.ideaId);
+
+  ratingAverage.value = data;
+});
+const commentPostingError = ref(false);
 
 async function editIdea() {
   const data = await getIdea(props.ideaId);
 
   if (data === "Idea doesn't exist.") {
     // emits("ideaNotValid", true)
-    // TODO 
+    // TODO
   } else {
     const username = data.username;
     const title = data.title;
@@ -102,7 +119,7 @@ async function loadCommentReplies(comment) {
 function toggleCommentReplies(comment) {
   comment.replyToggle = !comment.replyToggle;
   loadCommentReplies(comment);
-  emits("revealOnScroll", true)
+  emits("revealOnScroll", true);
 }
 
 function showCommentReplies(comment) {
@@ -129,7 +146,7 @@ function showDeletePopup() {
 function toggleComments() {
   loadIdeaComments();
   showCommentsToggle.value = !showCommentsToggle.value;
-  emits("revealOnScroll", true)
+  emits("revealOnScroll", true);
 }
 
 function getRepliesForComment(commentId) {
@@ -142,9 +159,33 @@ function getRepliesForComment(commentId) {
     : [];
 }
 
+function verifyString(inputString) {
+  const letterRegex = /[a-zA-Z]/;
+  const numberRegex = /[0-9]/;
+  const symbolRegex = /[^a-zA-Z0-9\s]/;
+
+  const containsLetters = letterRegex.test(inputString);
+  const containsNumbers = numberRegex.test(inputString);
+  const containsSymbols = symbolRegex.test(inputString);
+
+  const result = containsLetters || containsNumbers || containsSymbols;
+
+  return result;
+}
+
+watch(postToggle, (newValue) => {
+  if (!newValue) commentPostingError.value = false;
+});
+
+watch(commentText, (newValue) => {
+  if (verifyString(newValue)) commentPostingError.value = false;
+});
+
 async function postCommentDynamic(username, ideaId, commentText) {
   try {
-    if (commentText.length !== 0) {
+    if (verifyString(commentText)) {
+      commentPostingError.value = false;
+
       const comment = await postComment(username, ideaId, commentText);
       comment.elapsedTime = "0 seconds";
       allLoadedComments.value.unshift(comment);
@@ -155,7 +196,12 @@ async function postCommentDynamic(username, ideaId, commentText) {
       }
     } else throw error;
   } catch (error) {
-    alert("Comment text must not be empty");
+    clearInput();
+    commentPostingError.value = true;
+    document.getElementById("comment-input-textarea").className = "";
+    setTimeout(() => {
+      document.getElementById("comment-input-textarea").className = "shake";
+    }, "10");
   }
 }
 
@@ -362,6 +408,14 @@ function triggerCollapseAnimation(commentId) {
     };
   }
 }
+
+function getStarRating() {
+  const starPercentage = (ratingAverage.value / 5) * 100;
+
+  const starPercentageRounded = Math.round(starPercentage / 10) * 10;
+
+  return starPercentage + "%";
+}
 </script>
 
 <template>
@@ -388,6 +442,12 @@ function triggerCollapseAnimation(commentId) {
         <div class="idea-card">
           <div class="top-container">
             <div class="left-container">
+              <div class="stars-outer">
+                <div
+                  class="stars-inner"
+                  :style="{ width: getStarRating() }"
+                ></div>
+              </div>
               <div class="left-container-title">
                 <div class="text" v-if="isSelected">
                   {{ getShortenedTitle(title, 40) }}
@@ -511,7 +571,21 @@ function triggerCollapseAnimation(commentId) {
           id="comment-input-textarea"
           v-model="commentText"
           :maxlength="maxCommentLength"
-          placeholder="  Write your comment here .."
+          :placeholder="
+            commentPostingError
+              ? 'Please write your comment here...'
+              : 'Write your comment here...'
+          "
+          class=""
+          :style="
+            !commentPostingError == ''
+              ? {
+                  'border-color': 'red',
+                  'background-color': 'rgb(255, 145, 153, 0.379)',
+                  'border-radius': '4px',
+                }
+              : { 'background-color': 'white', 'border-radius': '4px' }
+          "
         >
         </textarea>
       </div>
@@ -524,8 +598,13 @@ function triggerCollapseAnimation(commentId) {
             id="post-button"
             @click.stop="
               postCommentDynamic(props.loggedUser, props.ideaId, commentText);
-              postToggle = !postToggle;
-              buttonSelected = !buttonSelected;
+              if (commentPostingError) {
+                postToggle = true;
+                buttonSelected = true;
+              } else {
+                postToggle = !postToggle;
+                buttonSelected = !buttonSelected;
+              }
             "
           >
             Post comment
@@ -587,6 +666,65 @@ function triggerCollapseAnimation(commentId) {
 </template>
 
 <style scoped>
+.stars-outer {
+  position: relative;
+  display: inline-block;
+  width: 80px;
+  box-sizing: border-box;
+  margin-top: 1.5vh;
+  margin-left: 5px;
+}
+
+.stars-inner {
+  top: 0;
+  box-sizing: border-box;
+  position: absolute;
+  overflow: hidden;
+}
+
+.stars-outer::before {
+  content: "\f005 \f005 \f005 \f005 \f005";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  color: #ccc;
+  width: 100%;
+}
+
+.stars-inner::before {
+  content: "\f005 \f005 \f005 \f005 \f005";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  color: #eb9224;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-3px);
+  }
+
+  50% {
+    transform: translateX(3px);
+  }
+
+  75% {
+    transform: translateX(-3px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.shake {
+  animation-name: shake;
+  animation-duration: 0.4s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+}
 .expand-animation {
   transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
   transition-delay: 0.05s;
@@ -742,7 +880,7 @@ function triggerCollapseAnimation(commentId) {
 
 .left-container {
   display: grid;
-  grid-template-rows: 20% 30px auto;
+  grid-template-rows: 15% 20% 35px auto;
   margin-left: 10px;
 }
 
@@ -821,6 +959,13 @@ function triggerCollapseAnimation(commentId) {
 
 .status {
   margin-left: 5px;
+  font-weight: 400;
+  font-size: medium;
+}
+
+.rating-average {
+  margin-left: 5px;
+  margin-top: 7px;
   font-weight: 400;
   font-size: medium;
 }
@@ -914,6 +1059,8 @@ img {
 }
 
 #comment-input-textarea {
+  padding-top: 4px;
+  padding-left: 7px;
   margin-top: 0.5vw;
   resize: none;
   width: 29vw;
