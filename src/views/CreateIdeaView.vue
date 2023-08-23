@@ -54,6 +54,8 @@ const ratingSet = ref({
   ratingNumber: 0,
 });
 
+const canStarsAppear = ref(false);
+
 const regex =
   /^(?=.*[A-Za-z0-9].*[A-Za-z0-9].*[A-Za-z0-9].*[A-Za-z0-9].*[A-Za-z0-9]).*$/;
 
@@ -90,52 +92,64 @@ onMounted(async () => {
 
   const allRatings = await currentIdeaViewMode.value.ratings;
 
+  if (allRatings.length == 0) {
+    canStarsAppear.value = true;
+  }
   allRatings.forEach((rating, index) => {
     if (rating.userUsername == getCurrentUsername()) {
+      canStarsAppear.value = true;
       ratingSet.value.isSet = true;
       ratingSet.value.ratingNumber = rating.ratingNumber;
 
-      stars.value = document.querySelectorAll(".star");
-      stars.value.forEach((star, index) => {
-        if (index < ratingSet.value.ratingNumber) {
-          star.style.backgroundPosition = "left -11.6vh";
-        } else {
-          star.style.backgroundPosition = "left -0.2vh";
-        }
-        star.addEventListener("mouseenter", () => {
-          if (index == 0 && !ratingSet.value.isSet) {
+      setTimeout(() => {
+        stars.value = document.querySelectorAll(".star");
+        stars.value.forEach((star, index) => {
+          if (index < ratingSet.value.ratingNumber) {
             star.style.backgroundPosition = "left -11.6vh";
-          } else if (!ratingSet.value.isSet) {
-            let number = index;
-            while (number >= 0) {
-              stars.value[number].style.backgroundPosition = "left -11.6vh";
-              number--;
-            }
-          }
-        });
-
-
-        star.addEventListener("mouseleave", () => {
-          if (index == 0 && !ratingSet.value.isSet) {
+          } else {
             star.style.backgroundPosition = "left -0.2vh";
-          } else if (!ratingSet.value.isSet) {
-            let number = index;
-            while (number >= 0) {
-              stars.value[number].style.backgroundPosition = "left -0.2vh";
-              number--;
-            }
           }
+
+          star.addEventListener("mouseenter", () => {
+            if (index == 0 && !ratingSet.value.isSet) {
+              star.style.backgroundPosition = "left -11.6vh";
+            } else if (!ratingSet.value.isSet) {
+              let number = index;
+              while (number >= 0) {
+                stars.value[number].style.backgroundPosition = "left -11.6vh";
+                number--;
+              }
+            }
+          });
+
+
+          star.addEventListener("mouseleave", () => {
+            if (index == 0 && !ratingSet.value.isSet) {
+              star.style.backgroundPosition = "left -0.2vh";
+            } else if (!ratingSet.value.isSet) {
+              let number = index;
+              while (number >= 0) {
+                stars.value[number].style.backgroundPosition = "left -0.2vh";
+                number--;
+              }
+            }
+          });
+
         });
-      });
+      }, 0)
+    } else {
+      canStarsAppear.value = true;
     }
   });
+
 });
 
-watch(inputValue, (newValue) => {
-  if (newValue !== "") {
-    titleError.value = "";
+// using deep because of the nested propreties
+watch(ratingSet, (newValue) => {
+  if (!newValue.isSet) {
+    
   }
-});
+}, { deep: true })
 
 watch(categoriesSelected, (newValue) => {
   if (newValue.length > 0) {
@@ -148,10 +162,6 @@ watch(textValue, (newValue) => {
     textError.value = "";
   }
 });
-
-// watch(categoriesSelected, (newValue) => {
-//   categoriesSelected.value = newValue
-// })
 
 //If the component is handling the update, we update the fields only once, we dont wanna update them multiple times
 // that s why we have a var
@@ -720,22 +730,27 @@ function onMountStars() {
           {{ isUpdatedIdeaEmpty ? "Create Idea" : "Update Idea" }}
         </CustomButton>
         <div class="rating" style="overflow: hidden" v-if="disableFields &&
-          currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername()" @mouseenter="onMountStars()">
+          currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername() && canStarsAppear"
+          @mouseenter="onMountStars()">
           <i class="star" @click="setRating(1)" @mouseenter="starsEventListener(1), ratingSet.ratingNumber = 1"
             @mouseleave="leaveStar(1)"></i>
           <i class="star" @click="setRating(2)" @mouseenter="starsEventListener(2), ratingSet.ratingNumber = 2"
-          @mouseleave="leaveStar(2)"></i>
+            @mouseleave="leaveStar(2)"></i>
           <i class="star" @click="setRating(3)" @mouseenter="starsEventListener(3), ratingSet.ratingNumber = 3"
-          @mouseleave="leaveStar(3)"></i>
+            @mouseleave="leaveStar(3)"></i>
           <i class="star" @click="setRating(4)" @mouseenter="starsEventListener(4), ratingSet.ratingNumber = 4"
-          @mouseleave="leaveStar(4)"></i>
+            @mouseleave="leaveStar(4)"></i>
           <i class="star" @click="setRating(5)" @mouseenter="starsEventListener(5), ratingSet.ratingNumber = 5"
-          @mouseleave="leaveStar(5)"></i>
+            @mouseleave="leaveStar(5)"></i>
         </div>
         <div class="rate-idea-text" v-if="disableFields &&
-          currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername()">{{ ratingSet.ratingNumber }} of
+          currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername() && canStarsAppear">{{
+    ratingSet.ratingNumber }} of
           5
         </div>
+        <img
+          v-if="!canStarsAppear && disableFields && currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername()"
+          src="@/assets/img/loading-stars.gif" style="height: 6vh; margin-bottom: 3vh; animation: 1s fadeOut;">
         <CustomDialog ref="customDialog" :open="deletePopup || ideaNotValid" :title="!ideaNotValid
           ? `Are you sure you want to delete '${currentIdeaTitle}'?`
           : `This idea doesn't exist anymore`
@@ -769,7 +784,7 @@ function onMountStars() {
 .rate-idea-text {
   color: rgba(0, 0, 0, 0.445);
   font-weight: 650;
-  animation: fadeIn 2s
+  animation: fadeIn 1s
 }
 
 .rating {
@@ -781,7 +796,7 @@ function onMountStars() {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 2s
+  animation: fadeIn 1s
 }
 
 @keyframes fadeIn {
@@ -791,6 +806,16 @@ function onMountStars() {
 
   100% {
     opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
   }
 }
 

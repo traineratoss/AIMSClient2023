@@ -173,6 +173,7 @@ onMounted(() => {
   justify-content: center;
   overflow: hidden;
   z-index: 10;
+  animation: fadeIn 3s;
 }
 
 #custom-loader {
@@ -186,6 +187,17 @@ onMounted(() => {
 .slide-container {
   display: flex;
   overflow: hidden;
+  animation: fadeIn 3s;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .slides {
