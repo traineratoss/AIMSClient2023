@@ -837,14 +837,14 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
         </div>
         <div class="no-raters" style="margin-bottom: 0.5vh;" v-if="raters.length > 0 && canStarsAppear">Ratings</div>
         <div class="list-of-raters" v-if="canStarsAppear && disableFields && currentIdeaViewMode
-          && currentIdeaViewMode.username == getCurrentUsername()">
+          && currentIdeaViewMode.username == getCurrentUsername()" style="">
           <div class="rater-stars" v-for="(rater, index) in raters" :key="index">
             <div class="rater-name" v-if="raters.length > 0">{{ getShortText(rater.userUsername, 1, 8) }}</div>
             <div class="stars-outer" v-if="raters.length > 0">
               <div class="stars-inner" :style="{ width: getStarRating(rater.ratingNumber) }"></div>
             </div>
           </div>
-          <div class="no-raters" v-if="raters.length === 0">Pending Feedback: No Ratings Yet</div>
+          <div class="no-raters" v-if="raters.length === 0">No Ratings Yet</div>
         </div>
         <img v-if="!canStarsAppear && disableFields" src="@/assets/img/loading-stars.gif"
           style="height: 6vh; margin-bottom: 3vh; animation: 1s fadeOut;">
@@ -924,14 +924,19 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
   justify-content: center;
   flex-direction: column;
   border: 1px solid slategray;
+  background-color: rgba(255, 255, 255, 0.749);
   height: 5vh;
   border-radius: 6px;
-  overflow-y: auto;
-  padding-top: 20px;
-  padding-left: 15px;
-  padding-bottom: 15px;
-  padding-right: 15px;
+  overflow-y: scroll;
+  padding-left: 1vw;
+  padding-bottom: 3vh;
+  padding-right: 1vw;
   width: 11.5vw;
+  flex-flow: row wrap;
+}
+
+.list-of-raters:hover {
+  background-color: rgba(255, 255, 255, 1)
 }
 
 .list-of-raters::-webkit-scrollbar {
@@ -963,7 +968,8 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
 .rate-idea-text {
   color: rgba(0, 0, 0, 0.445);
   font-weight: 650;
-  animation: fadeIn 1s
+  animation: fadeIn 1s;
+  margin-top: 10px
 }
 
 .rating {
