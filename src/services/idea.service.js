@@ -193,6 +193,28 @@ async function getIdeaRatingAverage(id) {
   }
 }
 
+async function addRatingToIdea(id, ratingNumber, username) {
+  const response = await fetch(API_URL + "/rating?id=" + id + "&ratingNumber=" + ratingNumber + "&username=" + username, {
+    method: "POST",
+    mode: "cors",
+    cache: "no-cache",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    redirect: "follow",
+    referrerPolicy: "no-referrer",
+  });
+
+  if (!response.ok) {
+    const responseText = await response.text();
+    return responseText;
+  } else {
+    const json = await response.json();
+    return json;
+  }
+}
+
 async function updateIdea(id, title, text, status, categoryList, image) {
   const response = await fetch(API_URL + "/update?id=" + id, {
     method: "PATCH",
@@ -317,5 +339,6 @@ export {
   deleteIdea,
   getImageById,
   getImageByIdeaId,
-  getIdeaRatingAverage
+  getIdeaRatingAverage,
+  addRatingToIdea
 };

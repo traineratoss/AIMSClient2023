@@ -16,6 +16,7 @@ import {
   createIdea,
   getImageByIdeaId,
   getImageById,
+  addRatingToIdea,
 } from "../services/idea.service";
 import { getCurrentUsername, getCurrentRole } from "../services/user_service";
 
@@ -49,7 +50,7 @@ const ideaNotValid = ref(false);
 const stars = ref(null);
 const ratingSet = ref({
   isSet: false,
-  ratingNumber: -1
+  ratingNumber: 0,
 });
 
 const regex =
@@ -79,6 +80,40 @@ onMounted(async () => {
   });
   // const imageUrl = `data:image/${dataImage.fileType};name=${dataImage.fileName};base64,${dataImage.base64Image}`
   slideImages.value = imageUrl;
+
+  onMountStars();
+
+  const response = await getIdea(ideaId);
+
+  const allRatings = await response.ratings;
+
+  allRatings.forEach((rating, index) => {
+    if (rating.userUsername == getCurrentUsername()) {
+      ratingSet.value.isSet = true;
+      ratingSet.value.ratingNumber = rating.ratingNumber;
+
+      stars.value = document.querySelectorAll(".star");
+      stars.value.forEach((star, index) => {
+        if (index < ratingSet.value.ratingNumber) {
+          star.style.backgroundPosition = "left -11.6vh";
+        } else {
+          star.style.backgroundPosition = "left -0.2vh";
+        }
+        star.addEventListener("mouseleave", () => {
+        if (index == 0 && !ratingSet.value.isSet) {
+          star.style.backgroundPosition = "left -0.2vh";
+        } else if (!ratingSet.value.isSet) {
+          let number = index;
+          while (number >= 0) {
+            stars.value[number].style.backgroundPosition = "left -0.2vh";
+            number--;
+          }
+        }
+        ratingSet.value.ratingNumber = 0;
+      });
+      });
+    }
+  });
 });
 
 watch(inputValue, (newValue) => {
@@ -112,37 +147,52 @@ watchEffect(() => {
   }
 });
 
-function starsEventListener() {
+function starsEventListener(indexValue) {
+  // First, we have a condition, if the rating is set by click
+  // If not, we add event listeners on each star so we know when being on each other
+  // We calculate the amount of stars we should have
+  // If we clicked a star, it means we already set a rating and it goes into the else statement
+  // there, if we go on on another star, it will reset the rating and we can put another rating
   if (!ratingSet.value.isSet) {
-    console.log("h")
+    
     stars.value = document.querySelectorAll(".star");
     stars.value.forEach((star, index) => {
       star.addEventListener("mouseenter", () => {
-        if (index == 0) {
-          star.style.backgroundPosition = 'left -123px'
-        } else {
+        if (index == 0 && !ratingSet.value.isSet) {
+          star.style.backgroundPosition = "left -11.6vh";
+        } else if (!ratingSet.value.isSet) {
           let number = index;
           while (number >= 0) {
-            stars.value[number].style.backgroundPosition = 'left -123px';
+            stars.value[number].style.backgroundPosition = "left -11.6vh";
             number--;
           }
         }
       });
 
       star.addEventListener("mouseleave", () => {
-        if (index == 0) {
-          star.style.backgroundPosition = 'left -2px'
-        } else {
+        if (index == 0 && !ratingSet.value.isSet) {
+          star.style.backgroundPosition = "left -0.2vh";
+        } else if (!ratingSet.value.isSet) {
           let number = index;
           while (number >= 0) {
-            stars.value[number].style.backgroundPosition = 'left -2px';
+            stars.value[number].style.backgroundPosition = "left -0.2vh";
             number--;
           }
         }
       });
     });
   } else {
-
+    stars.value = document.querySelectorAll(".star");
+    if (indexValue !== ratingSet.value.ratingNumber) {
+      stars.value.forEach((star, index) => {
+        if (index < indexValue) {
+          star.style.backgroundPosition = "left -11.6vh";
+        } else {
+          star.style.backgroundPosition = "left -0.2vh";
+        }
+      });
+      ratingSet.value.isSet = false;
+    }
   }
 }
 
@@ -484,9 +534,9 @@ async function shouldDisableArrows() {
   }
 }
 
-function onMouseLeave() { }
+function onMouseLeave() {}
 
-function onMouseEnter() { }
+function onMouseEnter() {}
 
 function removeSelection(index) {
   if (!disableFields) {
@@ -497,24 +547,26 @@ function removeSelection(index) {
   }
 }
 
-function setRating(indexValue) {
+async function setRating(indexValue) {
   stars.value = document.querySelectorAll(".star");
   ratingSet.value.isSet = true;
   ratingSet.value.ratingNumber = indexValue;
 
   stars.value.forEach((star, index) => {
     if (index < indexValue) {
-      star.style.backgroundPosition = 'left -123px'
+      star.style.backgroundPosition = "left -11.6vh";
     }
-  })
+  });
+
+  await addRatingToIdea(
+    ideaId,
+    ratingSet.value.ratingNumber,
+    getCurrentUsername()
+  );
 }
 
-let oneTimer = true;
 function onMountStars() {
-  if (oneTimer) {
-    starsEventListener();
-    oneTimer = false;
-  }
+  starsEventListener();
 }
 </script>
 
@@ -530,24 +582,52 @@ function onMountStars() {
       <div class="input-container">
         <div class="idea">
           <label for="title-idea" class="label">Title:</label>
-          <CustomInput id="title-input" v-model="inputValue" :disabled="fieldsDisabled" :maxlength="50" :placeholder="!titleError == '' ? titleError : 'Write a title here...'
-            " :widthInPx="16" style="background-color: rgba(255, 145, 153, 0.679)" class="" :style="!titleError == ''
-    ? {
-      'border-color': 'red',
-      'background-color': 'rgb(255, 145, 153, 0.379)',
-      'border-radius': '4px',
-    }
-    : { 'background-color': 'white', 'border-radius': '4px' }
-    " />
+          <CustomInput
+            id="title-input"
+            v-model="inputValue"
+            :disabled="fieldsDisabled"
+            :maxlength="50"
+            :placeholder="
+              !titleError == '' ? titleError : 'Write a title here...'
+            "
+            :widthInPx="16"
+            style="background-color: rgba(255, 145, 153, 0.679)"
+            class=""
+            :style="
+              !titleError == ''
+                ? {
+                    'border-color': 'red',
+                    'background-color': 'rgb(255, 145, 153, 0.379)',
+                    'border-radius': '4px',
+                  }
+                : { 'background-color': 'white', 'border-radius': '4px' }
+            "
+          />
         </div>
 
         <div class="idea">
-          <label for="status-idea" class="label" @mouseleave="onMouseLeave" @mouseenter="onMouseEnter">Status:</label>
-          <select v-model="statusValue" @mouseenter="onMouseEnter" style="width: 16vw" @mouseleave="onMouseLeave"
-            name="status-idea" class="custom-select" :disabled="fieldsDisabled">
+          <label
+            for="status-idea"
+            class="label"
+            @mouseleave="onMouseLeave"
+            @mouseenter="onMouseEnter"
+            >Status:</label
+          >
+          <select
+            v-model="statusValue"
+            @mouseenter="onMouseEnter"
+            style="width: 16vw"
+            @mouseleave="onMouseLeave"
+            name="status-idea"
+            class="custom-select"
+            :disabled="fieldsDisabled"
+          >
             <option value="open">Open</option>
             <option value="draft">Draft</option>
-            <option v-if="!isUpdatedIdeaEmpty && currentRole == 'ADMIN'" value="implemented">
+            <option
+              v-if="!isUpdatedIdeaEmpty && currentRole == 'ADMIN'"
+              value="implemented"
+            >
               Implemented
             </option>
           </select>
@@ -556,27 +636,49 @@ function onMountStars() {
         <div class="idea">
           <label for="category-idea" class="label">Categories:</label>
 
-          <CustomDropDown id="category-input" v-if="!showDeletePopup && !disableFields"
-            @update:selectedOptions="handleSelectedCategories" :disabled="fieldsDisabled" :variants="categoryOptions"
-            :canAddInDropdown="true" :selectedObjects="stringifyCategory()" :input-placeholder="categoryError ? categoryError : 'Select your categories...'
-              " class="input-width" :width-in-vw="16" :error="categoryError">
+          <CustomDropDown
+            id="category-input"
+            v-if="!showDeletePopup && !disableFields"
+            @update:selectedOptions="handleSelectedCategories"
+            :disabled="fieldsDisabled"
+            :variants="categoryOptions"
+            :canAddInDropdown="true"
+            :selectedObjects="stringifyCategory()"
+            :input-placeholder="
+              categoryError ? categoryError : 'Select your categories...'
+            "
+            class="input-width"
+            :width-in-vw="16"
+            :error="categoryError"
+          >
           </CustomDropDown>
-          <input v-if="showDeletePopup || disableFields || ideaNotValid" v-model="onlyForDeleteCategories"
-            :disabled="disableFields" style="
+          <input
+            v-if="showDeletePopup || disableFields || ideaNotValid"
+            v-model="onlyForDeleteCategories"
+            :disabled="disableFields"
+            style="
               width: 15.8vw;
               height: 2vh;
               background-color: rgba(255, 255, 255, 0.597);
               border-radius: 3px;
               border: 1px slategray;
               color: black;
-            " />
+            "
+          />
         </div>
 
         <div class="display-categories-container">
-          <div class="display-categories" v-for="(category, index) in categoriesSelected" :key="index" :style="!disableFields
-            ? { 'background-color': 'white' }
-            : { 'background-color': '#cccccc' }
-            " @click="removeSelection(index)">
+          <div
+            class="display-categories"
+            v-for="(category, index) in categoriesSelected"
+            :key="index"
+            :style="
+              !disableFields
+                ? { 'background-color': 'white' }
+                : { 'background-color': '#cccccc' }
+            "
+            @click="removeSelection(index)"
+          >
             {{ category }} <b>x</b>
           </div>
         </div>
@@ -585,30 +687,42 @@ function onMountStars() {
       <div class="idea-text">
         <div class="text-input-wrapper">
           <div class="input-text-container">
-            <textarea v-model="textValue" :disabled="fieldsDisabled" :maxlength="500" :placeholder="!textError == '' ? textError : 'Write a text here...'
-              " id="textarea-id" :style="!textError == ''
-    ? {
-      'border-color': 'red',
-      'background-color': 'rgb(255, 145, 153, 0.479)',
-      'border-radius': '2px',
-    }
-    : { 'background-color': 'white', 'border-radius': '2px' }
-    ">
+            <textarea
+              v-model="textValue"
+              :disabled="fieldsDisabled"
+              :maxlength="500"
+              :placeholder="
+                !textError == '' ? textError : 'Write a text here...'
+              "
+              id="textarea-id"
+              :style="
+                !textError == ''
+                  ? {
+                      'border-color': 'red',
+                      'background-color': 'rgb(255, 145, 153, 0.479)',
+                      'border-radius': '2px',
+                    }
+                  : { 'background-color': 'white', 'border-radius': '2px' }
+              "
+            >
             </textarea>
           </div>
           <div class="input-bottom">
-            <p id="maxlength-textarea" :style="{
-              color: textValue
-                ? textValue.length == 500
-                  ? 'red'
-                  : 'slategray'
-                : 'slategray',
-              opacity: textValue
-                ? textValue.length == 500
-                  ? '100'
-                  : '70%'
-                : '70%',
-            }">
+            <p
+              id="maxlength-textarea"
+              :style="{
+                color: textValue
+                  ? textValue.length == 500
+                    ? 'red'
+                    : 'slategray'
+                  : 'slategray',
+                opacity: textValue
+                  ? textValue.length == 500
+                    ? '100'
+                    : '70%'
+                  : '70%',
+              }"
+            >
               {{ textValue ? textValue.length : 0 }} / 500
             </p>
           </div>
@@ -617,15 +731,31 @@ function onMountStars() {
 
       <div class="carousel-container">
         <div class="idea-carousel">
-          <CarouselImage class="carousel-image" :images="slideImages" @current-index="getCurrentIndex"
-            @selected-image-values="getSelectedImageValues" :initialCurrentIndex="initialCurrentIndex()"
-            :disabledArrow="shouldDisableArrows()" :imageHeightPercentage="100" />
+          <CarouselImage
+            class="carousel-image"
+            :images="slideImages"
+            @current-index="getCurrentIndex"
+            @selected-image-values="getSelectedImageValues"
+            :initialCurrentIndex="initialCurrentIndex()"
+            :disabledArrow="shouldDisableArrows()"
+            :imageHeightPercentage="100"
+          />
         </div>
         <div class="add-image">
-          <input type="file" id="upload" hidden :disabled="fieldsDisabled" ref="uploadedImage"
-            v-on:change="uploadImage($event)" />
-          <label for="upload" class="add-image-idea" v-if="!deletePopup && !disableFields"
-            style="display: flex; align-items: center">
+          <input
+            type="file"
+            id="upload"
+            hidden
+            :disabled="fieldsDisabled"
+            ref="uploadedImage"
+            v-on:change="uploadImage($event)"
+          />
+          <label
+            for="upload"
+            class="add-image-idea"
+            v-if="!deletePopup && !disableFields"
+            style="display: flex; align-items: center"
+          >
             Upload Image
             <span class="material-symbols-outlined" style="margin-left: 5px">
               attach_file
@@ -635,25 +765,63 @@ function onMountStars() {
       </div>
 
       <div class="create-container">
-        <CustomButton id="create-idea" @click="shouldCreateOrUpdate" :disabled="fieldsDisabled"
-          v-if="!deletePopup && !disableFields" :height-in-px="40" :width-in-px="300">
+        <CustomButton
+          id="create-idea"
+          @click="shouldCreateOrUpdate"
+          :disabled="fieldsDisabled"
+          v-if="!deletePopup && !disableFields"
+          :height-in-px="40"
+          :width-in-px="300"
+        >
           {{ isUpdatedIdeaEmpty ? "Create Idea" : "Update Idea" }}
         </CustomButton>
-        <div class="rate-idea-text" v-if="disableFields"> RATE THIS IDEA</div>
-        <div class="rating" style="overflow: hidden;" v-if="disableFields" @mouseenter="onMountStars()">
-          <i class="star" @click="setRating(1)" @mouseenter="starsEventListener()"></i>
-          <i class="star" @click="setRating(2)" @mouseenter="starsEventListener()"></i>
-          <i class="star" @click="setRating(3)" @mouseenter="starsEventListener()"></i>
-          <i class="star" @click="setRating(4)" @mouseenter="starsEventListener()"></i>
-          <i class="star" @click="setRating(5)" @mouseenter="starsEventListener()"></i>
+        <div class="rating" style="overflow: hidden" v-if="disableFields">
+          <i
+            class="star"
+            @click="setRating(1)"
+            @mouseenter="starsEventListener(1), ratingSet.ratingNumber = 1"
+            @mouseleave="ratingSet.isSet ? ratingSet.ratingNumber = 1 : ratingSet.ratingNumber = 0"
+          ></i>
+          <i
+            class="star"
+            @click="setRating(2)"
+            @mouseenter="starsEventListener(2), ratingSet.ratingNumber = 2"
+            @mouseleave="ratingSet.isSet ? ratingSet.ratingNumber = 2 : ratingSet.ratingNumber = 0"
+          ></i>
+          <i
+            class="star"
+            @click="setRating(3)"
+            @mouseenter="starsEventListener(3), ratingSet.ratingNumber = 3"
+            @mouseleave="ratingSet.isSet ? ratingSet.ratingNumber = 3 : ratingSet.ratingNumber = 0"
+          ></i>
+          <i
+            class="star"
+            @click="setRating(4)"
+            @mouseenter="starsEventListener(4), ratingSet.ratingNumber = 4"
+            @mouseleave="ratingSet.isSet ? ratingSet.ratingNumber = 4 : ratingSet.ratingNumber = 0"
+          ></i>
+          <i
+            class="star"
+            @click="setRating(5)"
+            @mouseenter="starsEventListener(5), ratingSet.ratingNumber = 5"
+            @mouseleave="ratingSet.isSet ? ratingSet.ratingNumber = 5 : ratingSet.ratingNumber = 0"
+          ></i>
         </div>
-        <CustomDialog ref="customDialog" :open="deletePopup || ideaNotValid" :title="!ideaNotValid
-          ? `Are you sure you want to delete '${currentIdeaTitle}'?`
-          : `This idea doesn't exist anymore`
-          " :message="!ideaNotValid
-    ? 'This item will be deleted immediately. You can\'t undo this action!'
-    : 'Please go back to the main page.'
-    ">
+        <div class="rate-idea-text" v-if="disableFields">{{ratingSet.ratingNumber}} of 5</div>
+        <CustomDialog
+          ref="customDialog"
+          :open="deletePopup || ideaNotValid"
+          :title="
+            !ideaNotValid
+              ? `Are you sure you want to delete '${currentIdeaTitle}'?`
+              : `This idea doesn't exist anymore`
+          "
+          :message="
+            !ideaNotValid
+              ? 'This item will be deleted immediately. You can\'t undo this action!'
+              : 'Please go back to the main page.'
+          "
+        >
           <div class="dialog-actions" v-if="deletePopup && !ideaNotValid">
             <button @click="handleCancel">Cancel</button>
             <button @click="handleConfirm">Confirm</button>
@@ -678,18 +846,24 @@ function onMountStars() {
 }
 
 .rate-idea-text {
-  font-size: large;
+  color: rgba(0, 0, 0, 0.445);
   font-weight: 650;
-  margin-bottom: 2vh;
 }
 
 .rating {
-  margin-bottom: 12vh;
+  height: 4.6vh;
+  width: 11vw;
+  border: 1px solid slategray;
+  border-radius: 5px;
+  background-color: #dedee293;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .star {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAABQCAYAAAAZQFV3AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABOFJREFUeNrsmEFoHFUYx9/MdHfTJRKzUhBaFiL1YghZCFQUIV6UQJuLWCgr8eKpIoiFSqsHQYrmYj14KHqxKAl6MbA5eCgKRVAMBhpCwIJQCETRQzTsNtnO7s74+17fbGc3M7OzZhUsHfjzdvd97/++973vff99Y/m+rwb5WL0Idz60h2nckTc8Nw2hncLmAnhtIB7i3VGan8VD8Dhebh+U8FOaX8Bh4EB48R8TQlai+QnkgMTxD/AYpFt9EULk0EyBD8Dn4BPT9TZ4CrwD6Wos4V+XrUdpXzQk4tUEkAFXwNUu+1fAWWO7anADLDLJTkCYpf0K3DQe3Ui5oUI6B8ShlyBstZfMMiXoX4MV8GZKQgnJcXA6nKPtGJoE/gZ8Cy6mIJPwnIJsL3ZTIB2h+U6WANZjyE6Aj8Cz3WT7TooJ7HUwneDdc+BaFFnc0SuCzQTCTWOT+iwfN6cjWJ6clo9NzOS5Bcb6IZTZj5pU+syEYNV8XzA2Y6lOCptyhGbDeDFPnJa6TlGZ5rxJ/nxkSRPCACR5EUyHf4sCNjOgENVn/ecVe+CEy8vLWgJmZ2fd1IRra2vxSbe5eYlmu1gsXo6zmZycTKcpkEn6vC61kM+FQYiUeDdvauP5Ay0ZjyIlgKVv9bVkiBwQVJRX2YwWkKLxrhxB+qYSPaxUKrESANHVrh2PlQAzqSbskAA6UkkA5B0SICvRSzb5ddrMWu4jh8umSLwckLVjSKClWJ6SwsrM76fwLpCAM4x1I9OGjhrN8+AkAyYSyGTDnhEHjCPxeYhBagmIIvtXJOBQkgSY5Z01/76umAy4lbpiG5IqzQuG6Alz9LLmf+IP5hh+AfmxnoSQdUgAg5a6JuuQgMiSFi7fJHkR9JQAbGbA/SoBi4uLWgLK5XIqCdBpkyQBZne3sTm4BGxsbLQlgM+DkYBsNjucyWQKaSXATvCuZFnWHIQqlxMVUOeMx/0RMsgBWgIgcyBVgqwwIwH0JUvAwsJChwQwuOQ4jrJtO/CsfQBc11We56lWqyXfOySALNgJdlmuWzNSB/P5vBKyyJnxMjxBs9mc2tvbEye+DN1l7uYhuaZvAXg1LaQyOOkRL3d3d8XLishHOEd1DMfHx7UEYLjCrCop2aXP2Mht4QxjoyWADi0BxGddZm80GjpWYSL5TfpkYnHAOBK/yxhoCZAl1et1PbharWrUajX9m/SJBESRJUlAr6fvW0CvZyyxOIQPN4kbnv1mlwQERGPhMbHli/Q5Yv5lSdDnSYelrlLWIQGRJS1cvjk1RdBTArCZAferBPT7IkjvcuP7t3pKADaxEpB5+r10FXv3x3kKqqUlgM+DkQB76OFhKzdycAnAo5KynTlraFTZQ4/gqH3ursd9EjLIAVoC7KGCAxFWNqSjWgLoS5aAfS+C7EzJcrLKOjSkrNwoFu0ToPz6n8pv3dFQXjPyRdA9CbDsk/ZDx5SQxWiAsg4X7vE361NedQsn/P0SELwIgmzaHiZMtpMcKK+pWlUuVF6j0v0iSMcw/+QFLQF+y13xbv/GpF4CWUt5tV+FTEsAY6MlgA4tASxlnaUo362yLGLlh2Lo1iCjj4nFAeNI/H9sDHbYxesEfcK//XvSoq9Fkf0/JCDqDWfV3I+TJGCLne19CzAvgtoS8OBF0APC6OdvAQYAj2xzC/IfXBsAAAAASUVORK5CYII=");
-  background-position: left -2px;
+  background-position: left -0.2vh;
   background-size: 4vh;
   width: 37px;
   height: 36px;
@@ -786,7 +960,7 @@ b {
   margin-top: 20px;
 }
 
-.carousel-image>img {
+.carousel-image > img {
   border: 1px solid slategray;
 }
 
