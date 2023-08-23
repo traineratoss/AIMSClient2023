@@ -46,6 +46,7 @@ const isWatchEffectExecuted = ref(false);
 const onlyForDeleteCategories = ref([]);
 
 const ideaNotValid = ref(false);
+const currentIdeaViewMode = ref(null);
 
 const stars = ref(null);
 const ratingSet = ref({
@@ -61,6 +62,11 @@ const handleSelectedCategories = (selectedCategories) => {
 };
 
 onMounted(async () => {
+
+  const response = await getIdea(ideaId);
+
+  currentIdeaViewMode.value = await response;
+
   if (updatedIdea.value == null) {
     categoriesSelected.value = [];
   }
@@ -81,11 +87,8 @@ onMounted(async () => {
   // const imageUrl = `data:image/${dataImage.fileType};name=${dataImage.fileName};base64,${dataImage.base64Image}`
   slideImages.value = imageUrl;
 
-  onMountStars();
 
-  const response = await getIdea(ideaId);
-
-  const allRatings = await response.ratings;
+  const allRatings = await currentIdeaViewMode.value.ratings;
 
   allRatings.forEach((rating, index) => {
     if (rating.userUsername == getCurrentUsername()) {
@@ -99,18 +102,30 @@ onMounted(async () => {
         } else {
           star.style.backgroundPosition = "left -0.2vh";
         }
-        star.addEventListener("mouseleave", () => {
-        if (index == 0 && !ratingSet.value.isSet) {
-          star.style.backgroundPosition = "left -0.2vh";
-        } else if (!ratingSet.value.isSet) {
-          let number = index;
-          while (number >= 0) {
-            stars.value[number].style.backgroundPosition = "left -0.2vh";
-            number--;
+        star.addEventListener("mouseenter", () => {
+          if (index == 0 && !ratingSet.value.isSet) {
+            star.style.backgroundPosition = "left -11.6vh";
+          } else if (!ratingSet.value.isSet) {
+            let number = index;
+            while (number >= 0) {
+              stars.value[number].style.backgroundPosition = "left -11.6vh";
+              number--;
+            }
           }
-        }
-        ratingSet.value.ratingNumber = 0;
-      });
+        });
+
+
+        star.addEventListener("mouseleave", () => {
+          if (index == 0 && !ratingSet.value.isSet) {
+            star.style.backgroundPosition = "left -0.2vh";
+          } else if (!ratingSet.value.isSet) {
+            let number = index;
+            while (number >= 0) {
+              stars.value[number].style.backgroundPosition = "left -0.2vh";
+              number--;
+            }
+          }
+        });
       });
     }
   });
@@ -154,7 +169,6 @@ function starsEventListener(indexValue) {
   // If we clicked a star, it means we already set a rating and it goes into the else statement
   // there, if we go on on another star, it will reset the rating and we can put another rating
   if (!ratingSet.value.isSet) {
-    
     stars.value = document.querySelectorAll(".star");
     stars.value.forEach((star, index) => {
       star.addEventListener("mouseenter", () => {
@@ -534,9 +548,9 @@ async function shouldDisableArrows() {
   }
 }
 
-function onMouseLeave() {}
+function onMouseLeave() { }
 
-function onMouseEnter() {}
+function onMouseEnter() { }
 
 function removeSelection(index) {
   if (!disableFields) {
@@ -565,8 +579,22 @@ async function setRating(indexValue) {
   );
 }
 
+function leaveStar(indexValue) {
+  if (ratingSet.value.isSet) {
+    ratingSet.value.ratingNumber = indexValue;
+  } else {
+    ratingSet.value.ratingNumber = 0;
+  }
+}
+
+let oneTimer = true;
 function onMountStars() {
-  starsEventListener();
+  if (oneTimer && !ratingSet.value.isSet) {
+    starsEventListener();
+    oneTimer = false;
+  } else {
+    oneTimer = false;
+  }
 }
 </script>
 
@@ -582,52 +610,24 @@ function onMountStars() {
       <div class="input-container">
         <div class="idea">
           <label for="title-idea" class="label">Title:</label>
-          <CustomInput
-            id="title-input"
-            v-model="inputValue"
-            :disabled="fieldsDisabled"
-            :maxlength="50"
-            :placeholder="
-              !titleError == '' ? titleError : 'Write a title here...'
-            "
-            :widthInPx="16"
-            style="background-color: rgba(255, 145, 153, 0.679)"
-            class=""
-            :style="
-              !titleError == ''
-                ? {
-                    'border-color': 'red',
-                    'background-color': 'rgb(255, 145, 153, 0.379)',
-                    'border-radius': '4px',
-                  }
-                : { 'background-color': 'white', 'border-radius': '4px' }
-            "
-          />
+          <CustomInput id="title-input" v-model="inputValue" :disabled="fieldsDisabled" :maxlength="50" :placeholder="!titleError == '' ? titleError : 'Write a title here...'
+            " :widthInPx="16" style="background-color: rgba(255, 145, 153, 0.679)" class="" :style="!titleError == ''
+    ? {
+      'border-color': 'red',
+      'background-color': 'rgb(255, 145, 153, 0.379)',
+      'border-radius': '4px',
+    }
+    : { 'background-color': 'white', 'border-radius': '4px' }
+    " />
         </div>
 
         <div class="idea">
-          <label
-            for="status-idea"
-            class="label"
-            @mouseleave="onMouseLeave"
-            @mouseenter="onMouseEnter"
-            >Status:</label
-          >
-          <select
-            v-model="statusValue"
-            @mouseenter="onMouseEnter"
-            style="width: 16vw"
-            @mouseleave="onMouseLeave"
-            name="status-idea"
-            class="custom-select"
-            :disabled="fieldsDisabled"
-          >
+          <label for="status-idea" class="label" @mouseleave="onMouseLeave" @mouseenter="onMouseEnter">Status:</label>
+          <select v-model="statusValue" @mouseenter="onMouseEnter" style="width: 16vw" @mouseleave="onMouseLeave"
+            name="status-idea" class="custom-select" :disabled="fieldsDisabled">
             <option value="open">Open</option>
             <option value="draft">Draft</option>
-            <option
-              v-if="!isUpdatedIdeaEmpty && currentRole == 'ADMIN'"
-              value="implemented"
-            >
+            <option v-if="!isUpdatedIdeaEmpty && currentRole == 'ADMIN'" value="implemented">
               Implemented
             </option>
           </select>
@@ -636,49 +636,27 @@ function onMountStars() {
         <div class="idea">
           <label for="category-idea" class="label">Categories:</label>
 
-          <CustomDropDown
-            id="category-input"
-            v-if="!showDeletePopup && !disableFields"
-            @update:selectedOptions="handleSelectedCategories"
-            :disabled="fieldsDisabled"
-            :variants="categoryOptions"
-            :canAddInDropdown="true"
-            :selectedObjects="stringifyCategory()"
-            :input-placeholder="
-              categoryError ? categoryError : 'Select your categories...'
-            "
-            class="input-width"
-            :width-in-vw="16"
-            :error="categoryError"
-          >
+          <CustomDropDown id="category-input" v-if="!showDeletePopup && !disableFields"
+            @update:selectedOptions="handleSelectedCategories" :disabled="fieldsDisabled" :variants="categoryOptions"
+            :canAddInDropdown="true" :selectedObjects="stringifyCategory()" :input-placeholder="categoryError ? categoryError : 'Select your categories...'
+              " class="input-width" :width-in-vw="16" :error="categoryError">
           </CustomDropDown>
-          <input
-            v-if="showDeletePopup || disableFields || ideaNotValid"
-            v-model="onlyForDeleteCategories"
-            :disabled="disableFields"
-            style="
+          <input v-if="showDeletePopup || disableFields || ideaNotValid" v-model="onlyForDeleteCategories"
+            :disabled="disableFields" style="
               width: 15.8vw;
               height: 2vh;
               background-color: rgba(255, 255, 255, 0.597);
               border-radius: 3px;
               border: 1px slategray;
               color: black;
-            "
-          />
+            " />
         </div>
 
         <div class="display-categories-container">
-          <div
-            class="display-categories"
-            v-for="(category, index) in categoriesSelected"
-            :key="index"
-            :style="
-              !disableFields
-                ? { 'background-color': 'white' }
-                : { 'background-color': '#cccccc' }
-            "
-            @click="removeSelection(index)"
-          >
+          <div class="display-categories" v-for="(category, index) in categoriesSelected" :key="index" :style="!disableFields
+            ? { 'background-color': 'white' }
+            : { 'background-color': '#cccccc' }
+            " @click="removeSelection(index)">
             {{ category }} <b>x</b>
           </div>
         </div>
@@ -687,42 +665,30 @@ function onMountStars() {
       <div class="idea-text">
         <div class="text-input-wrapper">
           <div class="input-text-container">
-            <textarea
-              v-model="textValue"
-              :disabled="fieldsDisabled"
-              :maxlength="500"
-              :placeholder="
-                !textError == '' ? textError : 'Write a text here...'
-              "
-              id="textarea-id"
-              :style="
-                !textError == ''
-                  ? {
-                      'border-color': 'red',
-                      'background-color': 'rgb(255, 145, 153, 0.479)',
-                      'border-radius': '2px',
-                    }
-                  : { 'background-color': 'white', 'border-radius': '2px' }
-              "
-            >
+            <textarea v-model="textValue" :disabled="fieldsDisabled" :maxlength="500" :placeholder="!textError == '' ? textError : 'Write a text here...'
+              " id="textarea-id" :style="!textError == ''
+    ? {
+      'border-color': 'red',
+      'background-color': 'rgb(255, 145, 153, 0.479)',
+      'border-radius': '2px',
+    }
+    : { 'background-color': 'white', 'border-radius': '2px' }
+    ">
             </textarea>
           </div>
           <div class="input-bottom">
-            <p
-              id="maxlength-textarea"
-              :style="{
-                color: textValue
-                  ? textValue.length == 500
-                    ? 'red'
-                    : 'slategray'
-                  : 'slategray',
-                opacity: textValue
-                  ? textValue.length == 500
-                    ? '100'
-                    : '70%'
-                  : '70%',
-              }"
-            >
+            <p id="maxlength-textarea" :style="{
+              color: textValue
+                ? textValue.length == 500
+                  ? 'red'
+                  : 'slategray'
+                : 'slategray',
+              opacity: textValue
+                ? textValue.length == 500
+                  ? '100'
+                  : '70%'
+                : '70%',
+            }">
               {{ textValue ? textValue.length : 0 }} / 500
             </p>
           </div>
@@ -731,31 +697,15 @@ function onMountStars() {
 
       <div class="carousel-container">
         <div class="idea-carousel">
-          <CarouselImage
-            class="carousel-image"
-            :images="slideImages"
-            @current-index="getCurrentIndex"
-            @selected-image-values="getSelectedImageValues"
-            :initialCurrentIndex="initialCurrentIndex()"
-            :disabledArrow="shouldDisableArrows()"
-            :imageHeightPercentage="100"
-          />
+          <CarouselImage class="carousel-image" :images="slideImages" @current-index="getCurrentIndex"
+            @selected-image-values="getSelectedImageValues" :initialCurrentIndex="initialCurrentIndex()"
+            :disabledArrow="shouldDisableArrows()" :imageHeightPercentage="100" />
         </div>
         <div class="add-image">
-          <input
-            type="file"
-            id="upload"
-            hidden
-            :disabled="fieldsDisabled"
-            ref="uploadedImage"
-            v-on:change="uploadImage($event)"
-          />
-          <label
-            for="upload"
-            class="add-image-idea"
-            v-if="!deletePopup && !disableFields"
-            style="display: flex; align-items: center"
-          >
+          <input type="file" id="upload" hidden :disabled="fieldsDisabled" ref="uploadedImage"
+            v-on:change="uploadImage($event)" />
+          <label for="upload" class="add-image-idea" v-if="!deletePopup && !disableFields"
+            style="display: flex; align-items: center">
             Upload Image
             <span class="material-symbols-outlined" style="margin-left: 5px">
               attach_file
@@ -765,63 +715,34 @@ function onMountStars() {
       </div>
 
       <div class="create-container">
-        <CustomButton
-          id="create-idea"
-          @click="shouldCreateOrUpdate"
-          :disabled="fieldsDisabled"
-          v-if="!deletePopup && !disableFields"
-          :height-in-px="40"
-          :width-in-px="300"
-        >
+        <CustomButton id="create-idea" @click="shouldCreateOrUpdate" :disabled="fieldsDisabled"
+          v-if="!deletePopup && !disableFields" :height-in-px="40" :width-in-px="300">
           {{ isUpdatedIdeaEmpty ? "Create Idea" : "Update Idea" }}
         </CustomButton>
-        <div class="rating" style="overflow: hidden" v-if="disableFields">
-          <i
-            class="star"
-            @click="setRating(1)"
-            @mouseenter="starsEventListener(1), ratingSet.ratingNumber = 1"
-            @mouseleave="ratingSet.isSet ? ratingSet.ratingNumber = 1 : ratingSet.ratingNumber = 0"
-          ></i>
-          <i
-            class="star"
-            @click="setRating(2)"
-            @mouseenter="starsEventListener(2), ratingSet.ratingNumber = 2"
-            @mouseleave="ratingSet.isSet ? ratingSet.ratingNumber = 2 : ratingSet.ratingNumber = 0"
-          ></i>
-          <i
-            class="star"
-            @click="setRating(3)"
-            @mouseenter="starsEventListener(3), ratingSet.ratingNumber = 3"
-            @mouseleave="ratingSet.isSet ? ratingSet.ratingNumber = 3 : ratingSet.ratingNumber = 0"
-          ></i>
-          <i
-            class="star"
-            @click="setRating(4)"
-            @mouseenter="starsEventListener(4), ratingSet.ratingNumber = 4"
-            @mouseleave="ratingSet.isSet ? ratingSet.ratingNumber = 4 : ratingSet.ratingNumber = 0"
-          ></i>
-          <i
-            class="star"
-            @click="setRating(5)"
-            @mouseenter="starsEventListener(5), ratingSet.ratingNumber = 5"
-            @mouseleave="ratingSet.isSet ? ratingSet.ratingNumber = 5 : ratingSet.ratingNumber = 0"
-          ></i>
+        <div class="rating" style="overflow: hidden" v-if="disableFields &&
+          currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername()" @mouseenter="onMountStars()">
+          <i class="star" @click="setRating(1)" @mouseenter="starsEventListener(1), ratingSet.ratingNumber = 1"
+            @mouseleave="leaveStar(1)"></i>
+          <i class="star" @click="setRating(2)" @mouseenter="starsEventListener(2), ratingSet.ratingNumber = 2"
+          @mouseleave="leaveStar(2)"></i>
+          <i class="star" @click="setRating(3)" @mouseenter="starsEventListener(3), ratingSet.ratingNumber = 3"
+          @mouseleave="leaveStar(3)"></i>
+          <i class="star" @click="setRating(4)" @mouseenter="starsEventListener(4), ratingSet.ratingNumber = 4"
+          @mouseleave="leaveStar(4)"></i>
+          <i class="star" @click="setRating(5)" @mouseenter="starsEventListener(5), ratingSet.ratingNumber = 5"
+          @mouseleave="leaveStar(5)"></i>
         </div>
-        <div class="rate-idea-text" v-if="disableFields">{{ratingSet.ratingNumber}} of 5</div>
-        <CustomDialog
-          ref="customDialog"
-          :open="deletePopup || ideaNotValid"
-          :title="
-            !ideaNotValid
-              ? `Are you sure you want to delete '${currentIdeaTitle}'?`
-              : `This idea doesn't exist anymore`
-          "
-          :message="
-            !ideaNotValid
-              ? 'This item will be deleted immediately. You can\'t undo this action!'
-              : 'Please go back to the main page.'
-          "
-        >
+        <div class="rate-idea-text" v-if="disableFields &&
+          currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername()">{{ ratingSet.ratingNumber }} of
+          5
+        </div>
+        <CustomDialog ref="customDialog" :open="deletePopup || ideaNotValid" :title="!ideaNotValid
+          ? `Are you sure you want to delete '${currentIdeaTitle}'?`
+          : `This idea doesn't exist anymore`
+          " :message="!ideaNotValid
+    ? 'This item will be deleted immediately. You can\'t undo this action!'
+    : 'Please go back to the main page.'
+    ">
           <div class="dialog-actions" v-if="deletePopup && !ideaNotValid">
             <button @click="handleCancel">Cancel</button>
             <button @click="handleConfirm">Confirm</button>
@@ -848,6 +769,7 @@ function onMountStars() {
 .rate-idea-text {
   color: rgba(0, 0, 0, 0.445);
   font-weight: 650;
+  animation: fadeIn 2s
 }
 
 .rating {
@@ -859,6 +781,17 @@ function onMountStars() {
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: fadeIn 2s
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .star {
@@ -960,7 +893,7 @@ b {
   margin-top: 20px;
 }
 
-.carousel-image > img {
+.carousel-image>img {
   border: 1px solid slategray;
 }
 
