@@ -549,7 +549,7 @@ async function setRating(indexValue) {
         </div>
       </div>
 
-      <div class="top-container-child">
+      <div class="top-container-child" v-if="!hideUser">
         <span :class="userSelected.length > 0 ? 'user2' : 'user'"
           :style="{ visibility: hideUser ? 'hidden' : 'visible' }">User:</span>
 

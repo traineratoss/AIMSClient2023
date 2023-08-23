@@ -28,6 +28,7 @@ const inputCategory = ref([]);
 const inputUser = ref([]);
 const inputSelectedDateFrom = ref("");
 const inputSelectedDateTo = ref("");
+const inputRating = ref(0);
 
 // non updated inputs, for sorting
 // if i leave the refs and if i press sort, it will filter, which should not happen
@@ -39,6 +40,7 @@ let currentCategory = [];
 let currentUser = [];
 let currentSelectedDateFrom = "";
 let currentSelectedDateTo = "";
+let currentRating = 0;
 
 const implementedIdeasCount = ref(0);
 const implementationPercentage = ref(0);
@@ -71,6 +73,7 @@ onMounted(async () => {
     currentStatus,
     currentCategory,
     currentUser,
+    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     currentPage.value - 1,
@@ -110,6 +113,7 @@ watch(searchValue, async (newValue) => {
       currentStatus,
       currentCategory,
       currentUser,
+      currentRating,
       currentSelectedDateFrom,
       currentSelectedDateTo,
       currentPage.value - 1,
@@ -264,6 +268,7 @@ async function changePage(pageNumber) {
     currentStatus,
     currentCategory,
     currentUser,
+    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     pageNumber - 1,
@@ -314,6 +319,7 @@ async function updateSortOrder() {
       currentStatus,
       currentCategory,
       currentUser,
+      currentRating,
       currentSelectedDateFrom,
       currentSelectedDateTo,
       currentPage.value - 1,
@@ -346,6 +352,7 @@ async function updateSortOrder() {
       currentStatus,
       currentCategory,
       currentUser,
+      currentRating,
       currentSelectedDateFrom,
       currentSelectedDateTo,
       currentPage.value - 1,
@@ -396,6 +403,7 @@ async function updateIdeas(filteredIdeas) {
       inputStatus.value,
       inputCategory.value,
       inputUser.value,
+      inputRating.value,
       inputSelectedDateFrom.value,
       inputSelectedDateTo.value,
       currentPage.value - 1,
@@ -448,6 +456,7 @@ const onPassInputVariables = (
   inputStatusParam,
   inputCategoryParam,
   inputUserParam,
+  inputRatingParam,
   inputSelectedDateFromParam,
   inputSelectedDateToParam
 ) => {
@@ -456,6 +465,7 @@ const onPassInputVariables = (
   inputStatus.value = inputStatusParam;
   inputCategory.value = inputCategoryParam;
   inputUser.value = inputUserParam;
+  inputRating.value = inputRatingParam;
   inputSelectedDateFrom.value = inputSelectedDateFromParam;
   inputSelectedDateTo.value = inputSelectedDateToParam;
 };
@@ -482,6 +492,7 @@ async function changeDisplay(pageSize) {
     currentStatus,
     currentCategory,
     currentUser,
+    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     currentPage.value - 1,
