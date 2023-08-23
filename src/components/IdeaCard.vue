@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch } from "vue";
 import CustomComment from "../components/CustomComment.vue";
 import router from "../router";
 import {
@@ -9,11 +9,7 @@ import {
   postReply,
 } from "../services/comment.service";
 import { getCurrentUsername, getCurrentRole } from "../services/user_service";
-import {
-  getIdea,
-  getIdeaRatingAverage,
-  loadPagedIdeas,
-} from "../services/idea.service";
+import { getIdea, loadPagedIdeas } from "../services/idea.service";
 
 const props = defineProps({
   title: "",
@@ -44,13 +40,7 @@ const arrayOfCommentIdAndReplyPair = ref([]);
 const isSelected = ref(false);
 const maxCommentLength = 500;
 const numberOfDisplayedComments = ref(10);
-const ratingAverage = ref(0);
 
-onMounted(async () => {
-  const data = await getIdeaRatingAverage(props.ideaId);
-
-  ratingAverage.value = data;
-});
 const commentPostingError = ref(false);
 
 async function editIdea() {
@@ -357,16 +347,17 @@ watch(
       watch(
         () => comment.replyToggle,
         () => {
-          if (comment.replyToggle === true) triggerExpandAnimation(comment.id);
-          else triggerCollapseAnimation(comment.id);
+          if (comment.replyToggle === true)
+            triggerExpandAnimation("customReply" + comment.id);
+          else triggerCollapseAnimation("customReply" + comment.id);
         }
       );
     });
   }
 );
 
-function triggerExpandAnimation(commentId) {
-  const reply = document.getElementById("customReply" + commentId);
+function triggerExpandAnimation(divId) {
+  const reply = document.getElementById(divId);
   if (reply !== null) {
     const animation = reply.animate(
       [
@@ -387,8 +378,8 @@ function triggerExpandAnimation(commentId) {
   }
 }
 
-function triggerCollapseAnimation(commentId) {
-  const reply = document.getElementById("customReply" + commentId);
+function triggerCollapseAnimation(divId) {
+  const reply = document.getElementById(divId);
   if (reply !== null) {
     const animation = reply.animate(
       [
@@ -409,13 +400,15 @@ function triggerCollapseAnimation(commentId) {
   }
 }
 
-function getStarRating() {
-  const starPercentage = (ratingAverage.value / 5) * 100;
-
-  const starPercentageRounded = Math.round(starPercentage / 10) * 10;
-
-  return starPercentage + "%";
-}
+watch(postToggle, () => {
+  if (postToggle.value === true) {
+    setTimeout(() => {
+      triggerExpandAnimation("commentInputWrapper");
+    }, "10");
+  } else {
+    triggerCollapseAnimation("commentInputWrapper");
+  }
+});
 </script>
 
 <template>
@@ -442,12 +435,6 @@ function getStarRating() {
         <div class="idea-card">
           <div class="top-container">
             <div class="left-container">
-              <div class="stars-outer">
-                <div
-                  class="stars-inner"
-                  :style="{ width: getStarRating() }"
-                ></div>
-              </div>
               <div class="left-container-title">
                 <div class="text" v-if="isSelected">
                   {{ getShortenedTitle(title, 40) }}
@@ -461,10 +448,10 @@ function getStarRating() {
               </div>
               <div class="left-container-text">
                 <div class="text" v-if="isSelected">
-                  {{ getShortText(props.text, 3, 49) }}
+                  {{ getShortText(props.text, 5, 57) }}
                 </div>
                 <div class="text" v-else>
-                  {{ getShortText(props.text, 2, 49) }}
+                  {{ getShortText(props.text, 2, 57) }}
                 </div>
               </div>
               <div class="left-container-buttons">
@@ -565,7 +552,11 @@ function getStarRating() {
         </div>
       </div>
     </div>
-    <div v-if="postToggle" class="comment-input-wrapper">
+    <div
+      v-if="postToggle"
+      class="comment-input-wrapper"
+      id="commentInputWrapper"
+    >
       <div class="comment-input-container">
         <textarea
           id="comment-input-textarea"
@@ -732,21 +723,25 @@ function getStarRating() {
   opacity: 0.001;
 }
 
+.cic-enter-active,
 .nested-enter-active {
   transition: all 0.1s ease-in-out;
   transition-delay: 0.05s;
 }
 
+.cic-enter-from,
 .nested-enter-from {
   transform: translateY(-20px);
   opacity: 0.001;
 }
 
+.cic-leave-active,
 .nested-leave-active {
   transition: all 0.1s ease-in-out;
   transition-delay: 0.05s;
 }
 
+.cic-leave-to,
 .nested-leave-to {
   transform: translateY(30px);
   opacity: 0.001;
@@ -880,7 +875,7 @@ function getStarRating() {
 
 .left-container {
   display: grid;
-  grid-template-rows: 15% 20% 35px auto;
+  grid-template-rows: 20% 30px auto;
   margin-left: 10px;
 }
 
@@ -959,13 +954,6 @@ function getStarRating() {
 
 .status {
   margin-left: 5px;
-  font-weight: 400;
-  font-size: medium;
-}
-
-.rating-average {
-  margin-left: 5px;
-  margin-top: 7px;
   font-weight: 400;
   font-size: medium;
 }

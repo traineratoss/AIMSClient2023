@@ -124,6 +124,59 @@ function postReplyFunction(username, parentId, commentText) {
 function clearInput() {
   commentText.value = "";
 }
+
+function triggerExpandAnimation(divId) {
+  const reply = document.getElementById(divId);
+  if (reply !== null) {
+    const animation = reply.animate(
+      [
+        { transform: "translateY(-20px)", opacity: 0.001 },
+        { transform: "translateY(0px)", opacity: 1 },
+      ],
+      {
+        duration: 250,
+        easing: "ease-in-out",
+        delay: 5,
+      }
+    );
+
+    animation.onfinish = () => {
+      reply.style.transform = "";
+      reply.style.opacity = "";
+    };
+  }
+}
+
+function triggerCollapseAnimation(divId) {
+  const reply = document.getElementById(divId);
+  if (reply !== null) {
+    const animation = reply.animate(
+      [
+        { transform: "translateY(0px)", opacity1: 1 },
+        { transform: "translateY(20px)", opacity: 0.001 },
+      ],
+      {
+        duration: 300,
+        easing: "ease-in-out",
+        delay: 5,
+      }
+    );
+
+    animation.onfinish = () => {
+      reply.style.transform = "";
+      reply.style.opacity = "";
+    };
+  }
+}
+
+watch(postToggle, () => {
+  triggerCollapseAnimation("replyInputContainer");
+  if (postToggle.value === true) {
+    setTimeout(() => {
+      triggerExpandAnimation("replyInputContainer");
+    }, "10");
+  }
+});
 </script>
 
 <template>
@@ -240,7 +293,11 @@ function clearInput() {
         </div>
       </div>
     </div>
-    <div class="reply-input-container" v-if="postToggle">
+    <div
+      class="reply-input-container"
+      v-if="postToggle"
+      id="replyInputContainer"
+    >
       <textarea
         id="insert-reply-textarea"
         v-model="commentText"

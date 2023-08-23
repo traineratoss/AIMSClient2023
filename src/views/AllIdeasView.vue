@@ -64,7 +64,7 @@ const sleepNow = (delay) =>
 
 onMounted(async () => {
   ideasTransitionContainer.value.addEventListener("scroll", scrollFade);
-  ideasTransitionContainer.value.addEventListener("wheel", scrollFade)
+  ideasTransitionContainer.value.addEventListener("wheel", scrollFade);
   ideasTransitionContainer.value.style.overflowY = "hidden";
 
   if (
@@ -196,8 +196,10 @@ function scrollFade() {
 
     const gapBottom = distanceTop;
 
-    console.log(reveals[0].getBoundingClientRect().bottom -
-      ideasTransitionContainer.value.getBoundingClientRect().top)
+    console.log(
+      reveals[0].getBoundingClientRect().bottom -
+        ideasTransitionContainer.value.getBoundingClientRect().top
+    );
 
     // If the card is visible
 
@@ -214,8 +216,11 @@ function scrollFade() {
 
       if (shouldFade) {
         if (elementBottom < -30) {
-          const topOpacityPercentage = -10/3 - (reveals[i].getBoundingClientRect().top -
-          ideasTransitionContainer.value.getBoundingClientRect().bottom) / 30;
+          const topOpacityPercentage =
+            -10 / 3 -
+            (reveals[i].getBoundingClientRect().top -
+              ideasTransitionContainer.value.getBoundingClientRect().bottom) /
+              30;
           reveals[i].style.opacity = `${topOpacityPercentage}`;
         }
 
@@ -225,14 +230,16 @@ function scrollFade() {
 
         // Setting the opacities of the bottom elements to fade in and out
 
-
         if (elementTop < 100) {
-          const topOpacityPercentage = -75/50 + (reveals[i].getBoundingClientRect().top -
-          ideasTransitionContainer.value.getBoundingClientRect().bottom) / 50;
+          const topOpacityPercentage =
+            -75 / 50 +
+            (reveals[i].getBoundingClientRect().top -
+              ideasTransitionContainer.value.getBoundingClientRect().bottom) /
+              50;
           reveals[i].style.opacity = `${topOpacityPercentage}`;
         }
-      //   console.log(reveals[1].getBoundingClientRect().bottom -
-      // ideasTransitionContainer.value.getBoundingClientRect().top)
+        //   console.log(reveals[1].getBoundingClientRect().bottom -
+        // ideasTransitionContainer.value.getBoundingClientRect().top)
 
         // if (
         //   ideasTransitionContainer.value.clientHeight -
@@ -255,7 +262,6 @@ function scrollFade() {
       // If the card doesnt respect the conditions, it isn't active anymore and I check which direction it will go
     } else {
       // reveals[i].classList.remove("active");
-
       // if (
       //   ideasTransitionContainer.value.clientHeight -
       //     reveals[i].getBoundingClientRect().bottom >
@@ -692,9 +698,8 @@ async function showStatistics() {
 function scrollFadeOnExpand() {
   setTimeout(() => {
     scrollFade();
-  }, 600)
+  }, 600);
 }
-
 </script>
 
 <template>
@@ -749,8 +754,8 @@ function scrollFadeOnExpand() {
               @change="updateSortOrder"
               style="width: 3.8vw"
             >
-            <option :value="0"> Oldest </option>
-            <option :value="1"> Newest </option>
+              <option :value="0">Oldest</option>
+              <option :value="1">Newest</option>
             </select>
             <div class="pageSize">
               <PageSizeSelect

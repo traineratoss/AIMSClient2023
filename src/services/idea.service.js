@@ -101,53 +101,52 @@ async function filterIdeas(
   username,
   sortDirection
 ) {
-    
-      isFiltering.value = true;
-      switch (sortDirection) {
-        case 0:
-          sortDirection = "ASC";
-          break;
-        case 1:
-          sortDirection = "DESC";
-          break;
-      }
-      if (pageNumber < 0) {
-        pageNumber = 0;
-      }
-    
-      let url = `${API_URL}/filter?pageNumber=${pageNumber}&sortDirection=${sortDirection}&pageSize=${pageSize}`;
-    
-      if (title) url += `&title=${title}`;
-      if (text) url += `&text=${text}`;
-      if (status.length != 0) url += `&status=${status}`;
-      if (category.length != 0) url += `&category=${category}`;
-      if (user.length != 0) url += `&user=${user}`;
-      if (selectedDateFrom) url += `&selectedDateFrom=${selectedDateFrom}`;
-      if (selectedDateTo) url += `&selectedDateTo=${selectedDateTo}`;
-      if (username) url += `&username=${username}`;
-    
-      const response = await fetch(url, {
-        method: "GET",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
-      });
-    
-      if (!response.ok) {
-        const responseText = await response.text();
-        isFiltering.value = false;
-        return responseText;
-      } else {
-        const json = await response.json();
-        isFiltering.value = false;
-        return json;
-      }
-    // }
+  isFiltering.value = true;
+  switch (sortDirection) {
+    case 0:
+      sortDirection = "ASC";
+      break;
+    case 1:
+      sortDirection = "DESC";
+      break;
+  }
+  if (pageNumber < 0) {
+    pageNumber = 0;
+  }
+
+  let url = `${API_URL}/filter?pageNumber=${pageNumber}&sortDirection=${sortDirection}&pageSize=${pageSize}`;
+
+  if (title) url += `&title=${title}`;
+  if (text) url += `&text=${text}`;
+  if (status.length != 0) url += `&status=${status}`;
+  if (category.length != 0) url += `&category=${category}`;
+  if (user.length != 0) url += `&user=${user}`;
+  if (selectedDateFrom) url += `&selectedDateFrom=${selectedDateFrom}`;
+  if (selectedDateTo) url += `&selectedDateTo=${selectedDateTo}`;
+  if (username) url += `&username=${username}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    mode: "cors",
+    cache: "no-cache",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    redirect: "follow",
+    referrerPolicy: "no-referrer",
+  });
+
+  if (!response.ok) {
+    const responseText = await response.text();
+    isFiltering.value = false;
+    return responseText;
+  } else {
+    const json = await response.json();
+    isFiltering.value = false;
+    return json;
+  }
+  // }
 }
 
 async function getIdea(id) {
@@ -162,28 +161,6 @@ async function getIdea(id) {
     redirect: "follow",
     referrerPolicy: "no-referrer",
   });
-  if (!response.ok) {
-    const responseText = await response.text();
-    return responseText;
-  } else {
-    const json = await response.json();
-    return json;
-  }
-}
-
-async function getIdeaRatingAverage(id) {
-  const response = await fetch(API_URL + "/ratingAverage?id=" + id, {
-    method: "GET",
-    mode: "cors",
-    cache: "no-cache",
-    credentials: "same-origin",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    redirect: "follow",
-    referrerPolicy: "no-referrer",
-  });
-
   if (!response.ok) {
     const responseText = await response.text();
     return responseText;
@@ -285,7 +262,9 @@ async function getPagedIdeasFromUser(
 }
 
 async function getImageById(imageId) {
-  const response = await fetch("http://localhost:8080/aims/api/v1/images/get?id=" + imageId);
+  const response = await fetch(
+    "http://localhost:8080/aims/api/v1/images/get?id=" + imageId
+  );
   const data = await response.json();
   return data;
 }
@@ -317,5 +296,4 @@ export {
   deleteIdea,
   getImageById,
   getImageByIdeaId,
-  getIdeaRatingAverage
 };
