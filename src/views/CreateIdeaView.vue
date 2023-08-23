@@ -48,6 +48,7 @@ const onlyForDeleteCategories = ref([]);
 
 const ideaNotValid = ref(false);
 const currentIdeaViewMode = ref(null);
+const raters = ref([]);
 
 const stars = ref(null);
 const ratingSet = ref({
@@ -66,17 +67,6 @@ const handleSelectedCategories = (selectedCategories) => {
 
 onMounted(async () => {
 
-  const response = await getIdea(ideaId);
-
-  currentIdeaViewMode.value = await response;
-
-  if (updatedIdea.value == null) {
-    categoriesSelected.value = [];
-  }
-  const dataCategory = await getCategory();
-  const categoryNames = dataCategory.map((category) => category.text);
-  categoryOptions.value = categoryNames;
-
   // must optimize a lot here, we shouldn't load all the images at first, it will take a lot of time
   // initially, load the image we need and then loading one image at a time, depending on the direction
   // we go (arrows <-> left, right)
@@ -90,6 +80,20 @@ onMounted(async () => {
   // const imageUrl = `data:image/${dataImage.fileType};name=${dataImage.fileName};base64,${dataImage.base64Image}`
   slideImages.value = imageUrl;
 
+  const response = await getIdea(ideaId);
+
+  currentIdeaViewMode.value = await response;
+
+  currentIdeaViewMode.value.ratings.forEach((rating, index) => {
+    raters.value.push(rating)
+  })
+
+  if (updatedIdea.value == null) {
+    categoriesSelected.value = [];
+  }
+  const dataCategory = await getCategory();
+  const categoryNames = dataCategory.map((category) => category.text);
+  categoryOptions.value = categoryNames;
 
   const allRatings = await currentIdeaViewMode.value.ratings;
 
@@ -607,6 +611,88 @@ function onMountStars() {
     oneTimer = false;
   }
 }
+
+function getStarRating(userRating) {
+  const starPercentage = (userRating / 5) * 100;
+
+  console.log(userRating)
+
+  // const starPercentageRounded = Math.round(starPercentage / 10) * 10;
+
+  return starPercentage + "%";
+}
+
+function getShortText(text, numberOfRows, numberOfCharacters) {
+  let shortText = "";
+  let row = "";
+  let countRows = 1;
+  let splitVar = false;
+
+  if (text.length <= numberOfCharacters * numberOfRows) return text;
+
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] == " ") {
+      splitVar = true;
+    }
+  }
+  if (splitVar) {
+    const wordsArray = text.split(" ");
+    for (let word of wordsArray) {
+      if (row.length + word.length <= numberOfCharacters - 1) row += " " + word;
+      else {
+        if (countRows === numberOfRows) {
+          row += " ";
+          for (let letter of word) {
+            if (row.length <= numberOfCharacters - 4) row += letter;
+          }
+          row += "...";
+          shortText += row;
+          break;
+        } else {
+          row += "\n";
+          shortText += row;
+          countRows++;
+          row = word;
+        }
+      }
+    }
+
+    return shortText;
+  } else {
+    const splitArray = [];
+    let returnText = "";
+
+    for (let i = 0; i < text.length; i += numberOfCharacters) {
+      splitArray.push(text.slice(i, i + numberOfCharacters));
+    }
+
+    for (let i = 0; i < splitArray.length; i++) {
+      returnText += splitArray[i] + "\n";
+    }
+
+    for (let word of returnText) {
+      if (row.length + word.length <= numberOfCharacters - 1) row += "" + word;
+      else {
+        if (countRows === numberOfRows) {
+          row += " ";
+          for (let letter of word) {
+            if (row.length <= numberOfCharacters - 4) row += letter;
+          }
+          row += "...";
+          shortText += row;
+          break;
+        } else {
+          row += "\n";
+          shortText += row;
+          countRows++;
+          row = word;
+        }
+      }
+    }
+    return shortText;
+  }
+}
+
 </script>
 
 <template>
@@ -749,9 +835,19 @@ function onMountStars() {
     ratingSet.ratingNumber }} of
           5
         </div>
-        <img
-          v-if="!canStarsAppear && disableFields && currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername()"
-          src="@/assets/img/loading-stars.gif" style="height: 6vh; margin-bottom: 3vh; animation: 1s fadeOut;">
+        <div class="no-raters" style="margin-bottom: 0.5vh;" v-if="raters.length > 0 && canStarsAppear">Ratings</div>
+        <div class="list-of-raters" v-if="canStarsAppear && disableFields && currentIdeaViewMode
+          && currentIdeaViewMode.username == getCurrentUsername()">
+          <div class="rater-stars" v-for="(rater, index) in raters" :key="index">
+            <div class="rater-name" v-if="raters.length > 0">{{ getShortText(rater.userUsername, 1, 8) }}</div>
+            <div class="stars-outer" v-if="raters.length > 0">
+              <div class="stars-inner" :style="{ width: getStarRating(rater.ratingNumber) }"></div>
+            </div>
+          </div>
+          <div class="no-raters" v-if="raters.length === 0">Pending Feedback: No Ratings Yet</div>
+        </div>
+        <img v-if="!canStarsAppear && disableFields" src="@/assets/img/loading-stars.gif"
+          style="height: 6vh; margin-bottom: 3vh; animation: 1s fadeOut;">
         <CustomDialog ref="customDialog" :open="deletePopup || ideaNotValid" :title="!ideaNotValid
           ? `Are you sure you want to delete '${currentIdeaTitle}'?`
           : `This idea doesn't exist anymore`
@@ -773,6 +869,88 @@ function onMountStars() {
 </template>
 
 <style scoped>
+.no-raters {
+  font-weight: 600;
+  font-size: 1.5vh;
+}
+
+.stars-outer {
+  position: relative;
+  width: 80px;
+  box-sizing: border-box;
+  margin-top: 5px;
+  margin-left: 1.5vw;
+}
+
+.stars-inner {
+  top: 0;
+  box-sizing: border-box;
+  position: absolute;
+  overflow: hidden;
+}
+
+.stars-outer::before {
+  content: "\f005 \f005 \f005 \f005 \f005";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  color: #ccc;
+  width: 100%;
+}
+
+.stars-inner::before {
+  content: "\f005 \f005 \f005 \f005 \f005";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  color: #eb9224;
+}
+
+.rater-name {
+  width: 5vw;
+  margin-top: 5px;
+  margin-left: 0.2vw;
+}
+
+.rater-stars {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  margin-right: auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.list-of-raters {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: 1px solid slategray;
+  height: 5vh;
+  border-radius: 6px;
+  overflow-y: auto;
+  padding-top: 20px;
+  padding-left: 15px;
+  padding-bottom: 15px;
+  padding-right: 15px;
+  width: 11.5vw;
+}
+
+.list-of-raters::-webkit-scrollbar {
+  display: block;
+  color: slategray;
+  width: 7px;
+}
+
+.list-of-raters::-webkit-scrollbar {
+  display: block;
+  width: 7px;
+}
+
+.list-of-raters::-webkit-scrollbar-thumb {
+  background-color: #ffa941;
+  border-radius: 7px;
+  border: 1px solid slategray;
+}
+
 #title-input {
   border-radius: 2px;
   border: 1px solid white;
@@ -1099,6 +1277,7 @@ textarea {
   flex-direction: column;
   width: 23vw;
   margin: auto;
+  margin-bottom: 5vh;
 }
 
 .label {
