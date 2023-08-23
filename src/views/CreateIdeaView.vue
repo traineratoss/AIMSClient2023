@@ -835,7 +835,8 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
     ratingSet.ratingNumber }} of
           5
         </div>
-        <div class="no-raters" style="margin-bottom: 0.5vh;" v-if="raters.length > 0 && canStarsAppear">Ratings</div>
+        <div class="no-raters" style="margin-bottom: 0.5vh;" v-if="raters.length > 0 && canStarsAppear && currentIdeaViewMode
+          && currentIdeaViewMode.username == getCurrentUsername()">Ratings</div>
         <div class="list-of-raters" v-if="canStarsAppear && disableFields && currentIdeaViewMode
           && currentIdeaViewMode.username == getCurrentUsername()" style="">
           <div class="rater-stars" v-for="(rater, index) in raters" :key="index">
