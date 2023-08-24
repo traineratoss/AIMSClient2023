@@ -110,18 +110,18 @@ onMounted(async () => {
         stars.value = document.querySelectorAll(".star");
         stars.value.forEach((star, index) => {
           if (index < ratingSet.value.ratingNumber) {
-            star.style.backgroundPosition = "left -11.6vh";
+            star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
           } else {
-            star.style.backgroundPosition = "left -0.2vh";
+            star.style.backgroundImage = "url('src/assets/img/white-star.png')"
           }
 
           star.addEventListener("mouseenter", () => {
             if (index == 0 && !ratingSet.value.isSet) {
-              star.style.backgroundPosition = "left -11.6vh";
+              star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
             } else if (!ratingSet.value.isSet) {
               let number = index;
               while (number >= 0) {
-                stars.value[number].style.backgroundPosition = "left -11.6vh";
+                stars.value[number].style.backgroundImage = "url('src/assets/img/orange-star.png')"
                 number--;
               }
             }
@@ -130,11 +130,11 @@ onMounted(async () => {
 
           star.addEventListener("mouseleave", () => {
             if (index == 0 && !ratingSet.value.isSet) {
-              star.style.backgroundPosition = "left -0.2vh";
+              star.style.backgroundImage = "url('src/assets/img/white-star.png')"
             } else if (!ratingSet.value.isSet) {
               let number = index;
               while (number >= 0) {
-                stars.value[number].style.backgroundPosition = "left -0.2vh";
+                stars.value[number].style.backgroundImage = "url('src/assets/img/white-star.png')"
                 number--;
               }
             }
@@ -188,11 +188,11 @@ function starsEventListener(indexValue) {
     stars.value.forEach((star, index) => {
       star.addEventListener("mouseenter", () => {
         if (index == 0 && !ratingSet.value.isSet) {
-          star.style.backgroundPosition = "left -11.6vh";
+          star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
         } else if (!ratingSet.value.isSet) {
           let number = index;
           while (number >= 0) {
-            stars.value[number].style.backgroundPosition = "left -11.6vh";
+            stars.value[number].style.backgroundImage = "url('src/assets/img/orange-star.png')"
             number--;
           }
         }
@@ -200,11 +200,11 @@ function starsEventListener(indexValue) {
 
       star.addEventListener("mouseleave", () => {
         if (index == 0 && !ratingSet.value.isSet) {
-          star.style.backgroundPosition = "left -0.2vh";
+          star.style.backgroundImage = "url('src/assets/img/white-star.png')"
         } else if (!ratingSet.value.isSet) {
           let number = index;
           while (number >= 0) {
-            stars.value[number].style.backgroundPosition = "left -0.2vh";
+            stars.value[number].style.backgroundImage = "url('src/assets/img/white-star.png')"
             number--;
           }
         }
@@ -215,9 +215,9 @@ function starsEventListener(indexValue) {
     if (indexValue !== ratingSet.value.ratingNumber) {
       stars.value.forEach((star, index) => {
         if (index < indexValue) {
-          star.style.backgroundPosition = "left -11.6vh";
+          star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
         } else {
-          star.style.backgroundPosition = "left -0.2vh";
+          star.style.backgroundImage = "url('src/assets/img/white-star.png')"
         }
       });
       ratingSet.value.isSet = false;
@@ -583,7 +583,7 @@ async function setRating(indexValue) {
 
   stars.value.forEach((star, index) => {
     if (index < indexValue) {
-      star.style.backgroundPosition = "left -11.6vh";
+      star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
     }
   });
 
@@ -812,6 +812,8 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
           v-if="!deletePopup && !disableFields" :height-in-px="40" :width-in-px="300">
           {{ isUpdatedIdeaEmpty ? "Create Idea" : "Update Idea" }}
         </CustomButton>
+        <div class="no-raters" v-if="canStarsAppear && currentIdeaViewMode
+          && currentIdeaViewMode.username !== getCurrentUsername()">Rate this idea</div>
         <div class="rating" style="overflow: hidden" v-if="disableFields &&
           currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername() && canStarsAppear"
           @mouseenter="onMountStars()">
@@ -976,12 +978,12 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
   width: 11vw;
   border: 1px solid slategray;
   border-radius: 5px;
-  background-color: #dedee293;
+  background-color: #61616293;
   display: flex;
   align-items: center;
   justify-content: center;
   animation: fadeIn 1s;
-  margin-top: 3vh;
+  margin-top: 1vh;
 }
 
 @keyframes fadeIn {
@@ -1005,13 +1007,13 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
 }
 
 .star {
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAABQCAYAAAAZQFV3AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABOFJREFUeNrsmEFoHFUYx9/MdHfTJRKzUhBaFiL1YghZCFQUIV6UQJuLWCgr8eKpIoiFSqsHQYrmYj14KHqxKAl6MbA5eCgKRVAMBhpCwIJQCETRQzTsNtnO7s74+17fbGc3M7OzZhUsHfjzdvd97/++973vff99Y/m+rwb5WL0Idz60h2nckTc8Nw2hncLmAnhtIB7i3VGan8VD8Dhebh+U8FOaX8Bh4EB48R8TQlai+QnkgMTxD/AYpFt9EULk0EyBD8Dn4BPT9TZ4CrwD6Wos4V+XrUdpXzQk4tUEkAFXwNUu+1fAWWO7anADLDLJTkCYpf0K3DQe3Ui5oUI6B8ShlyBstZfMMiXoX4MV8GZKQgnJcXA6nKPtGJoE/gZ8Cy6mIJPwnIJsL3ZTIB2h+U6WANZjyE6Aj8Cz3WT7TooJ7HUwneDdc+BaFFnc0SuCzQTCTWOT+iwfN6cjWJ6clo9NzOS5Bcb6IZTZj5pU+syEYNV8XzA2Y6lOCptyhGbDeDFPnJa6TlGZ5rxJ/nxkSRPCACR5EUyHf4sCNjOgENVn/ecVe+CEy8vLWgJmZ2fd1IRra2vxSbe5eYlmu1gsXo6zmZycTKcpkEn6vC61kM+FQYiUeDdvauP5Ay0ZjyIlgKVv9bVkiBwQVJRX2YwWkKLxrhxB+qYSPaxUKrESANHVrh2PlQAzqSbskAA6UkkA5B0SICvRSzb5ddrMWu4jh8umSLwckLVjSKClWJ6SwsrM76fwLpCAM4x1I9OGjhrN8+AkAyYSyGTDnhEHjCPxeYhBagmIIvtXJOBQkgSY5Z01/76umAy4lbpiG5IqzQuG6Alz9LLmf+IP5hh+AfmxnoSQdUgAg5a6JuuQgMiSFi7fJHkR9JQAbGbA/SoBi4uLWgLK5XIqCdBpkyQBZne3sTm4BGxsbLQlgM+DkYBsNjucyWQKaSXATvCuZFnWHIQqlxMVUOeMx/0RMsgBWgIgcyBVgqwwIwH0JUvAwsJChwQwuOQ4jrJtO/CsfQBc11We56lWqyXfOySALNgJdlmuWzNSB/P5vBKyyJnxMjxBs9mc2tvbEye+DN1l7uYhuaZvAXg1LaQyOOkRL3d3d8XLishHOEd1DMfHx7UEYLjCrCop2aXP2Mht4QxjoyWADi0BxGddZm80GjpWYSL5TfpkYnHAOBK/yxhoCZAl1et1PbharWrUajX9m/SJBESRJUlAr6fvW0CvZyyxOIQPN4kbnv1mlwQERGPhMbHli/Q5Yv5lSdDnSYelrlLWIQGRJS1cvjk1RdBTArCZAferBPT7IkjvcuP7t3pKADaxEpB5+r10FXv3x3kKqqUlgM+DkQB76OFhKzdycAnAo5KynTlraFTZQ4/gqH3ursd9EjLIAVoC7KGCAxFWNqSjWgLoS5aAfS+C7EzJcrLKOjSkrNwoFu0ToPz6n8pv3dFQXjPyRdA9CbDsk/ZDx5SQxWiAsg4X7vE361NedQsn/P0SELwIgmzaHiZMtpMcKK+pWlUuVF6j0v0iSMcw/+QFLQF+y13xbv/GpF4CWUt5tV+FTEsAY6MlgA4tASxlnaUo362yLGLlh2Lo1iCjj4nFAeNI/H9sDHbYxesEfcK//XvSoq9Fkf0/JCDqDWfV3I+TJGCLne19CzAvgtoS8OBF0APC6OdvAQYAj2xzC/IfXBsAAAAASUVORK5CYII=");
-  background-position: left -0.2vh;
-  background-size: 4vh;
-  width: 37px;
-  height: 36px;
+  background-image: url("@/assets/img/white-star.png");
+  background-size: 3vh;
+  width: 34px;
+  height: 30px;
   float: left;
   cursor: pointer;
+  gap: 100px;
 }
 
 #back-button:hover {
