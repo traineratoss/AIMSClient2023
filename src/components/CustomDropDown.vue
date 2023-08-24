@@ -203,59 +203,58 @@ function getInputPlaceholder() {
 
 <template>
   <div class="combo-box">
-    <input
-      type="text"
-      ref="comboInput"
-      class="input-dropdown"
-      :placeholder="getInputPlaceholder()"
-      :disabled="props.disabled"
-      @keydown.enter="handleInputKeyPress"
-      @input="handleInputBoxChange"
-      @mouseleave="onMouseLeave"
-      :style="{
+    <input type="text" ref="comboInput" class="input-dropdown" :placeholder="getInputPlaceholder()"
+      :disabled="props.disabled" @keydown.enter="handleInputKeyPress" @input="handleInputBoxChange"
+      @mouseleave="onMouseLeave" :style="{
         height: props.heightInVh ? props.heightInVh / 2 + 'vh' : {},
         width: props.widthInVw ? props.widthInVw + 'vw' : {},
-      }"
-      v-bind:style="
-        error !== ''
-          ? {
-              'border-color': 'red',
-              'background-color': 'rgb(255, 145, 153, 0.379)',
-            }
-          : { 'background-color': 'white' }
-      "
-    />
-    <div
-      v-show="isDropdownVisible && !props.disabled"
-      class="dropdown"
-      ref="dropdown"
-      id="dropdown"
-      @mouseenter="onMouseEnter"
-      @mouseleave="onMouseLeave"
-      :style="{
+      }" v-bind:style="error !== ''
+    ? {
+      'border-color': 'red',
+      'background-color': 'rgb(255, 145, 153, 0.379)',
+    }
+    : { 'background-color': 'white' }
+  " />
+    <div v-show="isDropdownVisible && !props.disabled" class="dropdown" ref="dropdown" id="dropdown"
+      @mouseenter="onMouseEnter" @mouseleave="onMouseLeave" :style="{
         width: props.widthInVw ? props.widthInVw + 'vw' : {},
-      }"
-    >
-      <label v-if="allVariantsReactive && allVariantsReactive.length > 0" v-for="(variant, index) in allVariantsReactive" :key="index">
-        <input
-          type="checkbox"
-          :value="variant"
-          :checked="isVariantSelected(variant)"
-          @change="handleCheckboxChange"
-        />
+      }">
+      <label v-if="allVariantsReactive && allVariantsReactive.length > 0" v-for="(variant, index) in allVariantsReactive"
+        :key="index">
+        <input type="checkbox" :value="variant" :checked="isVariantSelected(variant)" @change="handleCheckboxChange" />
         {{ variant }}
       </label>
-      <div v-if="allVariantsReactive && allVariantsReactive.length ===0 && props.variants == 0" style="overflow: hidden;">
+      <div v-if="allVariantsReactive && allVariantsReactive.length === 0 && props.variants.length == 0" style="overflow: hidden;">
         <CustomLoader :size="30" />
       </div>
-      <div v-if="allVariantsReactive && allVariantsReactive.length ===0 && props.variants > 0" style="overflow: hidden;">
-        <CustomLoader :size="30" />
+      <div v-if="allVariantsReactive && allVariantsReactive.length === 0 && props.variants.length > 0" style="overflow: hidden;">
+        <span class="material-symbols-outlined">
+          error
+        </span>
+        <div class="empty-list-text">Empty list!</div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 48;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  color: red;
+}
+
+.empty-list-text {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
 .combo-box {
   position: relative;
   display: inline-block;
