@@ -133,6 +133,77 @@ const filterData = async () => {
   emits("filter-listening", filteredIdeasEmit.value);
 };
 
+function getShortText(text, numberOfRows, numberOfCharacters) {
+  let shortText = "";
+  let row = "";
+  let countRows = 1;
+  let splitVar = false;
+
+  if (text.length <= numberOfCharacters * numberOfRows) return text;
+
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] == " ") {
+      splitVar = true;
+    }
+  }
+  if (splitVar) {
+    const wordsArray = text.split(" ");
+    for (let word of wordsArray) {
+      if (row.length + word.length <= numberOfCharacters - 1) row += " " + word;
+      else {
+        if (countRows === numberOfRows) {
+          row += " ";
+          for (let letter of word) {
+            if (row.length <= numberOfCharacters - 4) row += letter;
+          }
+          row += "...";
+          shortText += row;
+          break;
+        } else {
+          row += "\n";
+          shortText += row;
+          countRows++;
+          row = word;
+        }
+      }
+    }
+
+    return shortText;
+  } else {
+    const splitArray = [];
+    let returnText = "";
+
+    for (let i = 0; i < text.length; i += numberOfCharacters) {
+      splitArray.push(text.slice(i, i + numberOfCharacters));
+    }
+
+    for (let i = 0; i < splitArray.length; i++) {
+      returnText += splitArray[i] + "\n";
+    }
+
+    for (let word of returnText) {
+      if (row.length + word.length <= numberOfCharacters - 1) row += "" + word;
+      else {
+        if (countRows === numberOfRows) {
+          row += " ";
+          for (let letter of word) {
+            if (row.length <= numberOfCharacters - 4) row += letter;
+          }
+          row += "...";
+          shortText += row;
+          break;
+        } else {
+          row += "\n";
+          shortText += row;
+          countRows++;
+          row = word;
+        }
+      }
+    }
+    return shortText;
+  }
+}
+
 async function handleSelectedCategories(selectedCategories) {
   categoriesSelected.value = selectedCategories;
 }
@@ -160,7 +231,7 @@ onMounted(async () => {
   categoryOptions.value = categoryNames;
 
   const dataUser = await getUser(100, 0, "username");
-  const usernames = dataUser.map((user) => user.username);
+  const usernames = dataUser.map((user) => getShortText(user.username, 1, 15));
   userOptions.value = usernames;
   sortOrder.value = "ASC";
 });

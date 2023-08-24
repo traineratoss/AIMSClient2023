@@ -41,6 +41,77 @@ onMounted(async () => {
   currentUserRole.value = getCurrentRole();
 });
 
+function getShortText(text, numberOfRows, numberOfCharacters) {
+  let shortText = "";
+  let row = "";
+  let countRows = 1;
+  let splitVar = false;
+
+  if (text.length <= numberOfCharacters * numberOfRows) return text;
+
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] == " ") {
+      splitVar = true;
+    }
+  }
+  if (splitVar) {
+    const wordsArray = text.split(" ");
+    for (let word of wordsArray) {
+      if (row.length + word.length <= numberOfCharacters - 1) row += " " + word;
+      else {
+        if (countRows === numberOfRows) {
+          row += " ";
+          for (let letter of word) {
+            if (row.length <= numberOfCharacters - 4) row += letter;
+          }
+          row += "...";
+          shortText += row;
+          break;
+        } else {
+          row += "\n";
+          shortText += row;
+          countRows++;
+          row = word;
+        }
+      }
+    }
+
+    return shortText;
+  } else {
+    const splitArray = [];
+    let returnText = "";
+
+    for (let i = 0; i < text.length; i += numberOfCharacters) {
+      splitArray.push(text.slice(i, i + numberOfCharacters));
+    }
+
+    for (let i = 0; i < splitArray.length; i++) {
+      returnText += splitArray[i] + "\n";
+    }
+
+    for (let word of returnText) {
+      if (row.length + word.length <= numberOfCharacters - 1) row += "" + word;
+      else {
+        if (countRows === numberOfRows) {
+          row += " ";
+          for (let letter of word) {
+            if (row.length <= numberOfCharacters - 4) row += letter;
+          }
+          row += "...";
+          shortText += row;
+          break;
+        } else {
+          row += "\n";
+          shortText += row;
+          countRows++;
+          row = word;
+        }
+      }
+    }
+    return shortText;
+  }
+}
+
 function loadCommentReplies() {
   emits("loadReplies");
 }
@@ -130,7 +201,7 @@ function clearInput() {
   <div v-if="props.isReply" class="reply-container">
     <div class="reply-grid-main-container">
       <div class="header-container-reply">
-        <p>@{{ props.username }}</p>
+        <p>@{{ getShortText(props.username, 1, 15) }}</p>
         <p class="elapsedTime">{{ props.elapsedTime }} ago</p>
       </div>
 
@@ -168,7 +239,7 @@ function clearInput() {
   <div v-if="!props.isReply" class="comment-container">
     <div class="comment-grid-main-container">
       <div class="header-container">
-        <p>{{ props.username }}</p>
+        <p>{{ getShortText(props.username, 1, 15) }}</p>
         <p class="elapsedTime">{{ props.elapsedTime }} ago</p>
       </div>
 

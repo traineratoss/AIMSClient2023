@@ -505,7 +505,7 @@ function getStarRating() {
                 </div>
                 <div class="author">
                   <div>{{ props.elapsedTime }} ago</div>
-                  <div><i> by </i>{{ props.username }}</div>
+                  <div><i> by </i>{{ getShortText(props.username, 1, 10) }}</div>
                 </div>
               </div>
             </div>

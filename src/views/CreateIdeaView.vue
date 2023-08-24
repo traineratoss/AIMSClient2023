@@ -816,8 +816,11 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
           v-if="!deletePopup && !disableFields" :height-in-px="40" :width-in-px="300">
           {{ isUpdatedIdeaEmpty ? "Create Idea" : "Update Idea" }}
         </CustomButton>
+
         <div class="no-raters" v-if="canStarsAppear && currentIdeaViewMode
-          && currentIdeaViewMode.username !== getCurrentUsername()">Rate this idea</div>
+          && currentIdeaViewMode.username !== getCurrentUsername()">Rate this idea
+        </div>
+
         <div class="rating" style="overflow: hidden" v-if="disableFields &&
           currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername() && canStarsAppear"
           @mouseenter="onMountStars()">
@@ -832,23 +835,45 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
           <i class="star" @click="setRating(5)" @mouseenter="starsEventListener(5), ratingSet.ratingNumber = 5"
             @mouseleave="leaveStar(5)"></i>
         </div>
+
         <div class="rate-idea-text" v-if="disableFields &&
           currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername() && canStarsAppear">{{
     ratingSet.ratingNumber }} of
           5
         </div>
+
         <div class="no-raters" style="margin-bottom: 0.5vh;" v-if="raters.length > 0 && canStarsAppear && currentIdeaViewMode
-          && currentIdeaViewMode.username == getCurrentUsername()">Ratings</div>
+          && currentIdeaViewMode.username == getCurrentUsername()">Ratings
+        </div>
+
         <div class="list-of-raters" v-if="canStarsAppear && disableFields && currentIdeaViewMode
           && currentIdeaViewMode.username == getCurrentUsername()" style="">
           <div class="rater-stars" v-for="(rater, index) in raters" :key="index">
-            <div class="rater-name" v-if="raters.length > 0">{{ getShortText(rater.userUsername, 1, 14) }}</div>
+            <div class="rater-name" v-if="raters.length > 0">{{ getShortText(rater.userUsername, 1, 10) }}</div>
             <div class="stars-outer" v-if="raters.length > 0">
               <div class="stars-inner" :style="{ width: getStarRating(rater.ratingNumber) }"></div>
             </div>
           </div>
           <div class="no-raters" v-if="raters.length === 0">No Ratings Yet</div>
         </div>
+
+
+        <div class="list-of-rating-text-admin" v-if="canStarsAppear && disableFields && currentIdeaViewMode
+          && currentIdeaViewMode.username !== getCurrentUsername() && currentRole == 'ADMIN'"> 
+          List Of Raters
+        </div>
+
+        <div class="list-of-raters-admin" v-if="canStarsAppear && disableFields && currentIdeaViewMode
+          && currentIdeaViewMode.username !== getCurrentUsername() && currentRole == 'ADMIN'" style="">
+          <div class="rater-stars" v-for="(rater, index) in raters" :key="index">
+            <div class="rater-name" v-if="raters.length > 0">{{ getShortText(rater.userUsername, 1, 10) }}</div>
+            <div class="stars-outer" v-if="raters.length > 0">
+              <div class="stars-inner" :style="{ width: getStarRating(rater.ratingNumber) }"></div>
+            </div>
+          </div>
+          <div class="no-raters" v-if="raters.length === 0">No Ratings Yet</div>
+        </div>
+
         <img v-if="!canStarsAppear && disableFields" src="@/assets/img/loading-stars.gif"
           style="height: 6vh; margin-bottom: 3vh; animation: 1s fadeOut;">
         <CustomDialog ref="customDialog" :open="deletePopup || ideaNotValid" :title="!ideaNotValid
@@ -940,6 +965,33 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
   animation: fadeIn 1s
 }
 
+.list-of-raters-admin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: 1px solid slategray;
+  background-color: rgba(255, 255, 255, 0.749);
+  height: 5vh;
+  border-radius: 6px;
+  overflow-y: scroll;
+  padding-left: 1vw;
+  padding-bottom: 3vh;
+  padding-right: 1vw;
+  width: 11.5vw;
+  flex-flow: row wrap;
+  animation: fadeIn 1s;
+  margin-bottom: 5vh;
+}
+
+.list-of-rating-text-admin {
+  margin-top: 5vh;
+  margin-bottom: 1vh;
+  font-weight: 600;
+  font-size: 1.5vh;
+  animation: fadeIn 1s
+}
+
 .list-of-raters:hover {
   background-color: rgba(255, 255, 255, 1)
 }
@@ -956,6 +1008,23 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
 }
 
 .list-of-raters::-webkit-scrollbar-thumb {
+  background-color: #ffa941;
+  border-radius: 7px;
+  border: 1px solid slategray;
+}
+
+.list-of-raters-admin::-webkit-scrollbar {
+  display: block;
+  color: slategray;
+  width: 7px;
+}
+
+.list-of-raters-admin::-webkit-scrollbar {
+  display: block;
+  width: 7px;
+}
+
+.list-of-raters-admin::-webkit-scrollbar-thumb {
   background-color: #ffa941;
   border-radius: 7px;
   border: 1px solid slategray;
@@ -1146,7 +1215,7 @@ textarea {
 
 #create-idea:hover {
   background-color: #e68608;
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .wrapper {
@@ -1168,6 +1237,23 @@ textarea {
   background-color: #e9e9e9;
   user-select: none;
   margin-bottom: 15px;
+  overflow-y: scroll;
+}
+
+.create-idea-container::-webkit-scrollbar {
+  display: block;
+  width: 10px;
+}
+
+.create-idea-container:hover::-webkit-scrollbar {
+  display: block;
+  width: 10px;
+}
+
+.create-idea-container::-webkit-scrollbar-thumb {
+  background-color: #ffa941;
+  border-radius: 5px;
+  border: 1px solid slategray;
 }
 
 .add-image-idea {
