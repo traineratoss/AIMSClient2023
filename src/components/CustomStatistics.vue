@@ -113,7 +113,7 @@ function getStarRating(index) {
 
   const starPercentage = (value / 5) * 100;
 
-  return (starPercentage + 3.5) + "%";
+  return starPercentage + "%";
 }
 </script>
 
@@ -435,7 +435,6 @@ function getStarRating(index) {
 .stars-outer {
   position: relative;
   display: inline-block;
-  width: 80px;
   box-sizing: border-box;
 }
 
