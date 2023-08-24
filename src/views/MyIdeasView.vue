@@ -233,21 +233,21 @@ function scrollFade() {
 
       // If the card doesnt respect the conditions, it isn't active anymore and I check which direction it will go
     } else {
-      reveals[i].classList.remove("active");
+      // reveals[i].classList.remove("active");
 
-      if (
-        ideasTransitionContainer.value.clientHeight -
-          reveals[i].getBoundingClientRect().bottom >
-        -100
-      ) {
-        reveals[i].style.transform = `translateY(-200px)`;
-      } else if (
-        reveals[i].getBoundingClientRect().top -
-          ideasTransitionContainer.value.getBoundingClientRect().top >
-        50
-      ) {
-        reveals[i].style.transform = `translateY(200px)`;
-      }
+      // if (
+      //   ideasTransitionContainer.value.clientHeight -
+      //     reveals[i].getBoundingClientRect().bottom >
+      //   -100
+      // ) {
+      //   reveals[i].style.transform = `translateY(-200px)`;
+      // } else if (
+      //   reveals[i].getBoundingClientRect().top -
+      //     ideasTransitionContainer.value.getBoundingClientRect().top >
+      //   50
+      // ) {
+      //   reveals[i].style.transform = `translateY(200px)`;
+      // }
     }
   }
 }

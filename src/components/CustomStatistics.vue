@@ -12,6 +12,7 @@ const props = defineProps({
   showSkeleton: Boolean,
   showAnimation: Boolean,
   showTopIdeas: Boolean,
+  showTopRatedIdeas: Boolean
 });
 
 const emits = defineEmits(["loadTop5Ideas", "loadData", "loadTopRatedIdeas"]);
@@ -34,6 +35,7 @@ const progressBar = ref(0);
 const loadingSpeed = 10;
 
 const showTopIdeas = ref(false);
+const showTopRatedIdeas = ref(false);
 
 watch(progressBar, (newX) => {
   progressBar.value = newX;
@@ -43,6 +45,13 @@ watch(
   () => props.showTopIdeas,
   (newValue) => {
     showTopIdeas.value = newValue;
+  }
+);
+
+watch(
+  () => props.showTopRatedIdeas,
+  (newValue) => {
+    showTopRatedIdeas.value = newValue;
   }
 );
 
@@ -78,7 +87,7 @@ function loadTop5Ideas() {
 
 function loadTopRatedIdeas() {
 
-  emits("loadTopRatedIdeas", props.recievedFilteredStats.topRatedIdeas);
+  emits("loadTopRatedIdeas", stats.value.topRatedIdeas);
 }
 
 async function refreshStats() {
@@ -204,7 +213,7 @@ function getStarRating(index) {
             <h4>No comments were posted in this time interval</h4>
           </div>
 
-          <div v-if="stats && stats.topRatedIdeas !== 0" class="most-commented-ideas">
+          <div v-if="stats && stats.topRatedIdeas.length !== 0" class="most-commented-ideas">
             <p>Top rated ideas:</p>
             <table id="idea-table">
               <tr>
@@ -224,13 +233,18 @@ function getStarRating(index) {
             </table>
             <div class="swich-buttons">
               <button class="load-button" @click="loadTopRatedIdeas()">
-                {{ !showTopIdeas ? "Load top rated ideas" : "Load all Ideas" }}
+                {{ !showTopRatedIdeas ? "Load top rated ideas" : "Load all Ideas" }}
               </button>
 
               <!-- <button class="load-button" @click="refreshStats()">
                 Refresh
               </button> -->
             </div>
+          </div>
+
+          <div v-if="stats && stats.topRatedIdeas.length === 0" class="most-commented-ideas">
+            <p>Top rated ideas:</p>
+            <h4 class="no-rating-found">No rated ideas were found in this time interval</h4>
           </div>
 
           <div class="most-commented-ideas" style="margin-bottom: 50px">
@@ -408,6 +422,12 @@ function getStarRating(index) {
 </template>
 
 <style scoped>
+
+.no-rating-found {
+  border: 1px solid slategray;
+  padding: 15px;
+  border-radius: 5px;
+}
 .stars-outer {
   position: relative;
   display: inline-block;

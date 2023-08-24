@@ -60,6 +60,7 @@ const loadingPage = ref(true);
 const noIdeasFoundCondition = ref(false);
 
 const showTopIdeas = ref(false);
+const showTopRatedIdeas = ref(false);
 
 const sleepNow = (delay) =>
   new Promise((resolve) => setTimeout(resolve, delay));
@@ -147,9 +148,11 @@ watch(searchValue, async (newValue) => {
       totalPages.value = 0;
       ideas.value = [];
       showTopIdeas.value = false;
+      showTopRatedIdeas.value = false;
     } else {
       noIdeasFoundCondition.value = false;
       showTopIdeas.value = false;
+      showTopRatedIdeas.value = false;
       updateIdeas(data); // we need to update the for multiple use cases
       setTimeout(() => {
         scrollFade();
@@ -215,8 +218,8 @@ function scrollFade() {
 
       if (shouldFade) {
         if (elementBottom < -30) {
-          const topOpacityPercentage = -10/3 - (reveals[i].getBoundingClientRect().top -
-          ideasTransitionContainer.value.getBoundingClientRect().bottom) / 30;
+          const topOpacityPercentage = -10 / 3 - (reveals[i].getBoundingClientRect().top -
+            ideasTransitionContainer.value.getBoundingClientRect().bottom) / 30;
           reveals[i].style.opacity = `${topOpacityPercentage}`;
         }
 
@@ -228,12 +231,12 @@ function scrollFade() {
 
 
         if (elementTop < 125) {
-          const topOpacityPercentage = -75/50 + (reveals[i].getBoundingClientRect().top -
-          ideasTransitionContainer.value.getBoundingClientRect().bottom) / 50;
+          const topOpacityPercentage = -75 / 50 + (reveals[i].getBoundingClientRect().top -
+            ideasTransitionContainer.value.getBoundingClientRect().bottom) / 50;
           reveals[i].style.opacity = `${topOpacityPercentage}`;
         }
-      //   console.log(reveals[1].getBoundingClientRect().bottom -
-      // ideasTransitionContainer.value.getBoundingClientRect().top)
+        //   console.log(reveals[1].getBoundingClientRect().bottom -
+        // ideasTransitionContainer.value.getBoundingClientRect().top)
 
         // if (
         //   ideasTransitionContainer.value.clientHeight -
@@ -255,21 +258,21 @@ function scrollFade() {
 
       // If the card doesnt respect the conditions, it isn't active anymore and I check which direction it will go
     } else {
-      reveals[i].classList.remove("active");
+      // reveals[i].classList.remove("active");
 
-      if (
-        ideasTransitionContainer.value.clientHeight -
-          reveals[i].getBoundingClientRect().bottom >
-        -100
-      ) {
-        reveals[i].style.transform = `translateY(-200px)`;
-      } else if (
-        reveals[i].getBoundingClientRect().top -
-          ideasTransitionContainer.value.getBoundingClientRect().top >
-        50
-      ) {
-        reveals[i].style.transform = `translateY(200px)`;
-      }
+      // if (
+      //   ideasTransitionContainer.value.clientHeight -
+      //   reveals[i].getBoundingClientRect().bottom >
+      //   -100
+      // ) {
+      //   reveals[i].style.transform = `translateY(-200px)`;
+      // } else if (
+      //   reveals[i].getBoundingClientRect().top -
+      //   ideasTransitionContainer.value.getBoundingClientRect().top >
+      //   50
+      // ) {
+      //   reveals[i].style.transform = `translateY(200px)`;
+      // }
     }
   }
 }
@@ -339,7 +342,7 @@ function setCurrentVariables() {
 // here, the page asc or desc is happening
 async function updateSortOrder() {
   if (sortOrder.value == 0) {
-    if (!showTopIdeas.value) {
+    if (!showTopIdeas.value && !showTopRatedIdeas.value) {
       ideasTransitionContainer.value.style.overflowY = "hidden";
       ideas.value = [];
 
@@ -373,11 +376,12 @@ async function updateSortOrder() {
           document.getElementById("scrollable-middle").scrollTop = "0";
         }, 0);
       }
-    } else {
+    } else if (showTopIdeas.value) {
       ideas.value = [];
       currentPage.value = 1;
       totalPages.value = 1;
       ideasTransitionContainer.value.style.overflowY = "hidden";
+      showTopRatedIdeas.value = true;
 
       stats.value = await getStats();
 
@@ -388,9 +392,26 @@ async function updateSortOrder() {
         ideasTransitionContainer.value.style.overflowY = "auto";
         document.getElementById("scrollable-middle").scrollTop = "0";
       }, 0);
+    } else if (showTopRatedIdeas.value) {
+      ideas.value = [];
+      currentPage.value = 1;
+      totalPages.value = 1;
+      ideasTransitionContainer.value.style.overflowY = "hidden";
+      ideaPerPage.value = pageSize;
+      showTopIdeas.value = true;
+
+      stats.value = await getStats();
+
+      ideas.value = stats.value.topRatedIdeas;
+      noIdeasFoundCondition.value = false;
+      setTimeout(() => {
+        scrollFade();
+        ideasTransitionContainer.value.style.overflowY = "auto";
+        document.getElementById("scrollable-middle").scrollTop = "0";
+      }, 0);
     }
   } else if (sortOrder.value == 1) {
-    if (!showTopIdeas.value) {
+    if (!showTopIdeas.value && !showTopRatedIdeas.value) {
       ideasTransitionContainer.value.style.overflowY = "hidden";
       ideas.value = [];
 
@@ -424,15 +445,33 @@ async function updateSortOrder() {
           document.getElementById("scrollable-middle").scrollTop = "0";
         }, 0);
       }
-    } else {
+    } else if (showTopIdeas.value) {
       ideas.value = [];
       currentPage.value = 1;
       totalPages.value = 1;
       ideasTransitionContainer.value.style.overflowY = "hidden";
+      showTopRatedIdeas.value = false;
 
       stats.value = await getStats();
 
       ideas.value = stats.value.mostCommentedIdeas;
+      noIdeasFoundCondition.value = false;
+      setTimeout(() => {
+        scrollFade();
+        ideasTransitionContainer.value.style.overflowY = "auto";
+        document.getElementById("scrollable-middle").scrollTop = "0";
+      }, 0);
+    } else if (showTopRatedIdeas.value) {
+      ideas.value = [];
+      currentPage.value = 1;
+      totalPages.value = 1;
+      ideasTransitionContainer.value.style.overflowY = "hidden";
+      ideaPerPage.value = pageSize;
+      showTopIdeas.value = false;
+
+      stats.value = await getStats();
+
+      ideas.value = stats.value.topRatedIdeas;
       noIdeasFoundCondition.value = false;
       setTimeout(() => {
         scrollFade();
@@ -450,6 +489,7 @@ async function loadRecievedIdeas(mostCommentedIdeas) {
 
   setTimeout(async () => {
     showTopIdeas.value = !showTopIdeas.value;
+    showTopRatedIdeas.value = false;
 
     if (showTopIdeas.value) {
       // const stats = await getStats(sortOrder.value === 0 ? "ASC" : "DESC");
@@ -502,8 +542,69 @@ async function loadRecievedIdeas(mostCommentedIdeas) {
   }, "500");
 }
 
+async function loadTopRatedIdeas(topRatedIdeas) {
+  ideas.value = [];
+  totalPages.value = 1;
+  currentPage.value = 1;
+
+  setTimeout(async () => {
+    showTopRatedIdeas.value = !showTopRatedIdeas.value;
+    showTopIdeas.value = false;
+
+    if (showTopRatedIdeas.value) {
+      // const stats = await getStats(sortOrder.value === 0 ? "ASC" : "DESC");
+      // ideas.value = stats.mostCommentedIdeas;
+      ideas.value = topRatedIdeas;
+
+      setTimeout(() => {
+        scrollFade();
+        ideasTransitionContainer.value.style.overflowY = "auto";
+        document.getElementById("scrollable-middle").scrollTop = "0";
+      }, 0);
+    } else {
+      const data = await filterIdeas(
+        inputTitle.value,
+        currentText,
+        currentStatus,
+        currentCategory,
+        currentUser,
+        currentRating,
+        currentSelectedDateFrom,
+        currentSelectedDateTo,
+        currentPage.value - 1,
+        ideaPerPage.value,
+        null,
+        sortOrder.value
+      );
+
+      loadingPage.value = true;
+      loggedUser.value = getCurrentUsername();
+      currentUserRole = getCurrentRole();
+      checkAdmin();
+
+      if (data === "No ideas found.") {
+        noIdeasFoundCondition.value = true;
+        sortOrder.value = 0;
+        totalPages.value = 0;
+        ideas.value = [];
+      } else {
+        noIdeasFoundCondition.value = false;
+        sortOrder.value = 0;
+        totalPages.value = Math.ceil(data.totalElements / ideaPerPage.value);
+        ideas.value = data.content;
+        setTimeout(() => {
+          scrollFade();
+          ideasTransitionContainer.value.style.overflowY = "auto";
+          document.getElementById("scrollable-middle").scrollTop = "0";
+        }, 0);
+      }
+    }
+  }, "500");
+}
+
 async function loadData() {
   showTopIdeas.value = false;
+  showTopRatedIdeas.value = false;
   loadingPage.value = true;
 
   ideas.value = [];
@@ -525,9 +626,10 @@ async function loadData() {
 
 async function updateIdeas(filteredIdeas) {
   ideasTransitionContainer.value.style.overflowY = "hidden";
-  
+
   totalPages.value = Math.ceil(filteredIdeas.totalElements / ideaPerPage.value); // the total nr of pages after filtering needs to be updated
   showTopIdeas.value = false;
+  showTopRatedIdeas.value = false;
 
   if (totalPages.value === 0) {
     noIdeasFoundCondition.value = true;
@@ -595,7 +697,7 @@ async function updateIdeas(filteredIdeas) {
   }
 }
 async function changeDisplay(pageSize) {
-  if (!showTopIdeas.value) {
+  if (!showTopIdeas.value && !showTopRatedIdeas.value) {
     ideas.value = [];
     ideasTransitionContainer.value.style.overflowY = "hidden";
 
@@ -630,16 +732,34 @@ async function changeDisplay(pageSize) {
         document.getElementById("scrollable-middle").scrollTop = "0";
       }, 0);
     }
-  } else {
+  } else if (showTopIdeas.value) {
     ideas.value = [];
     currentPage.value = 1;
     totalPages.value = 1;
     ideasTransitionContainer.value.style.overflowY = "hidden";
     ideaPerPage.value = pageSize;
+    showTopRatedIdeas.value = false;
 
     stats.value = await getStats();
 
     ideas.value = stats.value.mostCommentedIdeas;
+    noIdeasFoundCondition.value = false;
+    setTimeout(() => {
+      scrollFade();
+      ideasTransitionContainer.value.style.overflowY = "auto";
+      document.getElementById("scrollable-middle").scrollTop = "0";
+    }, 0);
+  } else if (showTopRatedIdeas.value) {
+    ideas.value = [];
+    currentPage.value = 1;
+    totalPages.value = 1;
+    ideasTransitionContainer.value.style.overflowY = "hidden";
+    ideaPerPage.value = pageSize;
+    showTopIdeas.value = false;
+
+    stats.value = await getStats();
+
+    ideas.value = stats.value.topRatedIdeas;
     noIdeasFoundCondition.value = false;
     setTimeout(() => {
       scrollFade();
@@ -710,7 +830,7 @@ function scrollFadeOnExpand() {
   }, 600)
 }
 
-function setIdeasEmptyFunction(){
+function setIdeasEmptyFunction() {
   ideas.value = [];
 }
 
@@ -719,98 +839,46 @@ function setIdeasEmptyFunction(){
 <template>
   <div class="all-ideas-view-container">
     <div class="left-container">
-      <CustomSidePanel
-        @filter-listening="updateIdeas"
-        :sort="sortOrder"
-        :currentUser="null"
-        :currentPage="currentPage"
-        @pass-input-variables="onPassInputVariables"
-        @pass-rating-variable="onPassRatingVariable"
-        @setIdeasEmpty = "setIdeasEmptyFunction()"
-        :ideasPerPage="ideaPerPage"
-        :hideUser="false"
-        :clear-all="showTopIdeas"
-      />
+      <CustomSidePanel @filter-listening="updateIdeas" :sort="sortOrder" :currentUser="null" :currentPage="currentPage"
+        @pass-input-variables="onPassInputVariables" @pass-rating-variable="onPassRatingVariable"
+        @setIdeasEmpty="setIdeasEmptyFunction()" :ideasPerPage="ideaPerPage" :hideUser="false"
+        :clear-all="showTopIdeas || showTopRatedIdeas" />
     </div>
-    <div
-      class="right-container"
-      :style="
-        isAdmin
-          ? { ' grid-template-columns': 'auto auto' }
-          : { 'grid-template-columns': '80vw' }
-      "
-    >
+    <div class="right-container" :style="isAdmin
+      ? { ' grid-template-columns': 'auto auto' }
+      : { 'grid-template-columns': '80vw' }
+      ">
       <div class="main-container">
-        <div
-          v-if="ideas && ideas.length <= 0 && !noIdeasFoundCondition"
-          class="loading-placeholder"
-        >
+        <div v-if="ideas && ideas.length <= 0 && !noIdeasFoundCondition" class="loading-placeholder">
           <CustomLoader :size="100" />
         </div>
-        <div
-          class="middle-container"
-          ref="ideasTransitionContainer"
-          id="scrollable-middle"
-        >
-          <div
-            v-if="!showTopIdeas"
-            class="sort-container"
-            :style="
-              ideas
-                ? ideas.length === 0 || showTopIdeas
-                  ? { visibility: 'hidden', 'text-align': 'right' }
-                  : { visibility: 'visible', 'text-align': 'right' }
-                : { 'text-align': 'right' }
-            "
-          >
+        <div class="middle-container" ref="ideasTransitionContainer" id="scrollable-middle">
+          <div v-if="!showTopIdeas || !showTopRatedIdeas" class="sort-container" :style="ideas
+            ? ideas.length === 0 || showTopIdeas || showTopRatedIdeas
+              ? { visibility: 'hidden', 'text-align': 'right' }
+              : { visibility: 'visible', 'text-align': 'right' }
+            : { 'text-align': 'right' }
+            ">
             <label for="sortOrder">Sort by: </label>
-            <select
-              id="sortOrder"
-              v-model="sortOrder"
-              @change="updateSortOrder"
-              style="width: 3.8vw"
-            >
-            <option :value="0"> Oldest </option>
-            <option :value="1"> Newest </option>
+            <select id="sortOrder" v-model="sortOrder" @change="updateSortOrder" style="width: 3.8vw">
+              <option :value="0"> Oldest </option>
+              <option :value="1"> Newest </option>
             </select>
             <div class="pageSize">
-              <PageSizeSelect
-                id="pageSizeSelect"
-                label="Ideas:"
-                @change-display="changeDisplay"
-              />
+              <PageSizeSelect id="pageSizeSelect" label="Ideas:" @change-display="changeDisplay" />
             </div>
           </div>
-          <div
-            class="ideas-transition-container"
-            ref="ideasTransitionContainer"
-          >
+          <div class="ideas-transition-container" ref="ideasTransitionContainer">
             <h2 v-if="showTopIdeas">Top ideas</h2>
+            <h2 v-if="showTopRatedIdeas">Top rated ideas</h2>
 
-            <div
-              v-for="idea in ideas"
-              :key="idea.id"
-              class="idea-transition-item reveal"
-            >
-              <IdeaCard
-                :title="idea.title"
-                :text="idea.text"
-                :status="idea.status"
-                :username="idea.username"
-                :ideaId="idea.id"
-                :commentsNumber="idea.commentsNumber"
-                :elapsedTime="idea.elapsedTime"
-                :image="getImageUrl(idea)"
-                :loggedUser="getCurrentUsername()"
-                @comment-counter-add="idea.commentsNumber++"
-                @comment-counter-sub="idea.commentsNumber--"
-                @revealOnScroll="scrollFadeOnExpand()"
-              />
+            <div v-for="idea in ideas" :key="idea.id" class="idea-transition-item reveal">
+              <IdeaCard :title="idea.title" :text="idea.text" :status="idea.status" :username="idea.username"
+                :ideaId="idea.id" :commentsNumber="idea.commentsNumber" :elapsedTime="idea.elapsedTime"
+                :image="getImageUrl(idea)" :loggedUser="getCurrentUsername()" @comment-counter-add="idea.commentsNumber++"
+                @comment-counter-sub="idea.commentsNumber--" @revealOnScroll="scrollFadeOnExpand()" />
             </div>
-            <div
-              v-if="ideas && ideas.length === 0 && noIdeasFoundCondition"
-              class="no-ideas-message"
-            >
+            <div v-if="ideas && ideas.length === 0 && noIdeasFoundCondition" class="no-ideas-message">
               <img src="../assets/img/curiosity-search.svg" />
               <br />
               <span class="black-font">Your search returned no results</span>
@@ -820,11 +888,7 @@ function setIdeasEmptyFunction(){
 
         <div v-if="ideas && ideas.length > 0" class="pagination-container">
           <div class="pagination-component">
-            <Pagination
-              :totalPages="totalPages"
-              :currentPage="currentPage"
-              @changePage="changePage"
-            />
+            <Pagination :totalPages="totalPages" :currentPage="currentPage" @changePage="changePage" />
           </div>
         </div>
       </div>
@@ -845,19 +909,11 @@ function setIdeasEmptyFunction(){
               <div class="date-input">
                 <div>
                   <span class="from-date"> From: </span>
-                  <CustomInput
-                    v-model="selectedDateFrom"
-                    type="date"
-                    class="date-picker"
-                  />
+                  <CustomInput v-model="selectedDateFrom" type="date" class="date-picker" />
                 </div>
                 <div>
                   <span class="to-date"> To: </span>
-                  <CustomInput
-                    v-model="selectedDateTo"
-                    type="date"
-                    class="date-picker"
-                  />
+                  <CustomInput v-model="selectedDateTo" type="date" class="date-picker" />
                 </div>
               </div>
             </fieldset>
@@ -870,15 +926,9 @@ function setIdeasEmptyFunction(){
           </div>
         </div>
         <Suspense>
-          <CustomStatistics
-            :recievedFilteredStats="stats"
-            :showGenerated="showGenerated"
-            :showAnimation="showAnimation"
-            :showSkeleton="showSkeleton"
-            @load-top5-ideas="loadRecievedIdeas"
-            @load-data="loadData"
-            :show-top-ideas="showTopIdeas"
-          />
+          <CustomStatistics :recievedFilteredStats="stats" :showGenerated="showGenerated" :showAnimation="showAnimation"
+            :showSkeleton="showSkeleton" @load-top5-ideas="loadRecievedIdeas" @loadTopRatedIdeas="loadTopRatedIdeas"
+            @load-data="loadData" :show-top-ideas="showTopIdeas" :show-top-rated-ideas="showTopRatedIdeas" />
         </Suspense>
       </div>
     </div>
@@ -960,7 +1010,7 @@ h2 {
   text-align: center;
 }
 
-.date-input > div {
+.date-input>div {
   display: flex;
   align-items: center;
   justify-content: space-between;

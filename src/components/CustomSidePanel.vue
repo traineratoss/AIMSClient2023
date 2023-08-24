@@ -234,7 +234,7 @@ function clearSelection() {
   ratingSet.value.ratingNumber = 0;
   stars.value = document.querySelectorAll(".star");
   stars.value.forEach((star, index) => {
-    star.style.backgroundImage = "url('@/assets/img/white-star.png')";
+    star.style.backgroundImage = "url('src/assets/img/white-star.png')"
   });
 }
 
