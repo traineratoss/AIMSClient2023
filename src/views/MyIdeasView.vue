@@ -28,7 +28,6 @@ const inputCategory = ref([]);
 const inputUser = ref([]);
 const inputSelectedDateFrom = ref("");
 const inputSelectedDateTo = ref("");
-const inputRating = ref(0);
 
 // non updated inputs, for sorting
 // if i leave the refs and if i press sort, it will filter, which should not happen
@@ -40,7 +39,6 @@ let currentCategory = [];
 let currentUser = [];
 let currentSelectedDateFrom = "";
 let currentSelectedDateTo = "";
-let currentRating = 0;
 
 const implementedIdeasCount = ref(0);
 const implementationPercentage = ref(0);
@@ -73,7 +71,6 @@ onMounted(async () => {
     currentStatus,
     currentCategory,
     currentUser,
-    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     currentPage.value - 1,
@@ -113,7 +110,6 @@ watch(searchValue, async (newValue) => {
       currentStatus,
       currentCategory,
       currentUser,
-      currentRating,
       currentSelectedDateFrom,
       currentSelectedDateTo,
       currentPage.value - 1,
@@ -170,7 +166,7 @@ function scrollFade() {
       reveals[i].getBoundingClientRect().top -
       ideasTransitionContainer.value.getBoundingClientRect().bottom;
 
-    let distanceBottom = scrollDirection === "down" ? 75 : -130;
+    let distanceBottom = scrollDirection === "down" ? 30 : -30;
 
     let distanceTop = scrollDirection === "down" ? 120 : -80;
 
@@ -193,8 +189,8 @@ function scrollFade() {
 
       if (shouldFade) {
         if (elementBottom < -30) {
-          const topOpacityPercentage = -10 / 3 - (reveals[i].getBoundingClientRect().top -
-            ideasTransitionContainer.value.getBoundingClientRect().bottom) / 30;
+          const topOpacityPercentage = -10/3 - (reveals[i].getBoundingClientRect().top -
+          ideasTransitionContainer.value.getBoundingClientRect().bottom) / 30;
           reveals[i].style.opacity = `${topOpacityPercentage}`;
         }
 
@@ -206,12 +202,12 @@ function scrollFade() {
 
 
         if (elementTop < 125) {
-          const topOpacityPercentage = -75 / 50 + (reveals[i].getBoundingClientRect().top -
-            ideasTransitionContainer.value.getBoundingClientRect().bottom) / 50;
+          const topOpacityPercentage = -75/50 + (reveals[i].getBoundingClientRect().top -
+          ideasTransitionContainer.value.getBoundingClientRect().bottom) / 50;
           reveals[i].style.opacity = `${topOpacityPercentage}`;
         }
-        //   console.log(reveals[1].getBoundingClientRect().bottom -
-        // ideasTransitionContainer.value.getBoundingClientRect().top)
+      //   console.log(reveals[1].getBoundingClientRect().bottom -
+      // ideasTransitionContainer.value.getBoundingClientRect().top)
 
         // if (
         //   ideasTransitionContainer.value.clientHeight -
@@ -233,21 +229,21 @@ function scrollFade() {
 
       // If the card doesnt respect the conditions, it isn't active anymore and I check which direction it will go
     } else {
-      // reveals[i].classList.remove("active");
+      reveals[i].classList.remove("active");
 
-      // if (
-      //   ideasTransitionContainer.value.clientHeight -
-      //   reveals[i].getBoundingClientRect().bottom >
-      //   -100
-      // ) {
-      //   reveals[i].style.transform = `translateY(-200px)`;
-      // } else if (
-      //   reveals[i].getBoundingClientRect().top -
-      //   ideasTransitionContainer.value.getBoundingClientRect().top >
-      //   50
-      // ) {
-      //   reveals[i].style.transform = `translateY(200px)`;
-      // }
+      if (
+        ideasTransitionContainer.value.clientHeight -
+          reveals[i].getBoundingClientRect().bottom >
+        -100
+      ) {
+        reveals[i].style.transform = `translateY(-200px)`;
+      } else if (
+        reveals[i].getBoundingClientRect().top -
+          ideasTransitionContainer.value.getBoundingClientRect().top >
+        50
+      ) {
+        reveals[i].style.transform = `translateY(200px)`;
+      }
     }
   }
 }
@@ -268,7 +264,6 @@ async function changePage(pageNumber) {
     currentStatus,
     currentCategory,
     currentUser,
-    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     pageNumber - 1,
@@ -319,7 +314,6 @@ async function updateSortOrder() {
       currentStatus,
       currentCategory,
       currentUser,
-      currentRating,
       currentSelectedDateFrom,
       currentSelectedDateTo,
       currentPage.value - 1,
@@ -352,7 +346,6 @@ async function updateSortOrder() {
       currentStatus,
       currentCategory,
       currentUser,
-      currentRating,
       currentSelectedDateFrom,
       currentSelectedDateTo,
       currentPage.value - 1,
@@ -403,7 +396,6 @@ async function updateIdeas(filteredIdeas) {
       inputStatus.value,
       inputCategory.value,
       inputUser.value,
-      inputRating.value,
       inputSelectedDateFrom.value,
       inputSelectedDateTo.value,
       currentPage.value - 1,
@@ -456,7 +448,6 @@ const onPassInputVariables = (
   inputStatusParam,
   inputCategoryParam,
   inputUserParam,
-  inputRatingParam,
   inputSelectedDateFromParam,
   inputSelectedDateToParam
 ) => {
@@ -465,7 +456,6 @@ const onPassInputVariables = (
   inputStatus.value = inputStatusParam;
   inputCategory.value = inputCategoryParam;
   inputUser.value = inputUserParam;
-  inputRating.value = inputRatingParam;
   inputSelectedDateFrom.value = inputSelectedDateFromParam;
   inputSelectedDateTo.value = inputSelectedDateToParam;
 };
@@ -492,7 +482,6 @@ async function changeDisplay(pageSize) {
     currentStatus,
     currentCategory,
     currentUser,
-    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     currentPage.value - 1,
@@ -526,56 +515,101 @@ function scrollFadeOnExpand() {
   }, 600)
 }
 
+function setIdeasEmptyFunction(){
+  ideas.value = [];
+}
+
+
 </script>
 
 <template>
   <div class="all-ideas-view-container">
     <div class="sidebar-container">
-      <CustomSidePanel @filter-listening="updateIdeas" :sort="sortOrder" :currentUser="getCurrentUsername()"
-        :currentPage="currentPage" @pass-input-variables="onPassInputVariables" :ideasPerPage="ideaPerPage"
-        :hideUser="true" />
+      <CustomSidePanel
+        @filter-listening="updateIdeas"
+        :sort="sortOrder"
+        :currentUser="getCurrentUsername()"
+        :currentPage="currentPage"
+        @pass-input-variables="onPassInputVariables"
+        @setIdeasEmpty = "setIdeasEmptyFunction()"
+        :ideasPerPage="ideaPerPage"
+        :hideUser="true"
+      />
       />
     </div>
     <div class="main-container">
-
-      <div v-if="ideas.length === 0 && !noIdeasFoundCondition" class="loading-placeholder">
+      
+      <div
+        v-if="ideas.length === 0 && !noIdeasFoundCondition"
+        class="loading-placeholder"
+      >
         <CustomLoader :size="100" />
       </div>
       <div class="middle-container" id="scrollable-middle" ref="ideasTransitionContainer">
-        <div class="sort-container" :style="ideas
-            ? ideas.length === 0
-              ? { visibility: 'hidden', 'text-align': 'right' }
-              : { visibility: 'visible', 'text-align': 'right' }
-            : { 'text-align': 'right' }
-          ">
+        <div
+            class="sort-container"
+            :style="
+              ideas
+                ? ideas.length === 0
+                  ? { visibility: 'hidden', 'text-align': 'right' }
+                  : { visibility: 'visible', 'text-align': 'right' }
+                : { 'text-align': 'right' }
+            "
+          >
           <label for="sortOrder">Sort by: </label>
           <select id="sortOrder" v-model="sortOrder" @change="updateSortOrder" style="width: 3.8vw">
             <option :value="0"> Oldest </option>
             <option :value="1"> Newest </option>
           </select>
           <div class="pageSize">
-            <PageSizeSelect id="pageSizeSelect" label="Ideas:" @change-display="changeDisplay" />
+            <PageSizeSelect
+              id="pageSizeSelect"
+              label="Ideas:"
+              @change-display="changeDisplay"
+            />
           </div>
         </div>
 
-        <div class="ideas-transition-container" ref="ideasTransitionContainer">
-          <div v-for="idea in ideas" :key="idea.id" class="idea-transition-item reveal">
-            <IdeaCard :title="idea.title" :text="idea.text" :status="idea.status" :username="idea.username"
-              :ideaId="idea.id" :commentsNumber="idea.commentsNumber" :elapsedTime="idea.elapsedTime"
-              :image="getImageUrl(idea)" :loggedUser="getCurrentUsername()" @comment-counter-add="idea.commentsNumber++"
-              @comment-counter-sub="idea.commentsNumber--" @revealOnScroll="scrollFadeOnExpand()" />
+        <div class="ideas-transition-container"
+            ref="ideasTransitionContainer" >
+          <div
+            v-for="idea in ideas"
+            :key="idea.id"
+            class="idea-transition-item reveal"
+          >
+            <IdeaCard
+              :title="idea.title"
+              :text="idea.text"
+              :status="idea.status"
+              :username="idea.username"
+              :ideaId="idea.id"
+              :commentsNumber="idea.commentsNumber"
+              :elapsedTime="idea.elapsedTime"
+              :image="getImageUrl(idea)"
+              :loggedUser="getCurrentUsername()"
+              @comment-counter-add="idea.commentsNumber++"
+              @comment-counter-sub="idea.commentsNumber--"
+              @revealOnScroll="scrollFadeOnExpand()"
+            />
           </div>
-          <div v-if="ideas.length === 0 && noIdeasFoundCondition" class="no-ideas-message">
-            <img src="../assets/img/curiosity-search.svg" />
-            <br />
-            <span class="black-font">Your search returned no results</span>
-          </div>
+          <div
+        v-if="ideas.length === 0 && noIdeasFoundCondition"
+        class="no-ideas-message"
+      >
+        <img src="../assets/img/curiosity-search.svg" />
+        <br />
+        <span class="black-font">Your search returned no results</span>
+      </div>
         </div>
       </div>
 
       <div v-if="ideas.length > 0" class="pagination-container">
         <div class="pagination-component">
-          <Pagination :totalPages="totalPages" :currentPage="currentPage" @changePage="changePage" />
+          <Pagination
+            :totalPages="totalPages"
+            :currentPage="currentPage"
+            @changePage="changePage"
+          />
         </div>
       </div>
     </div>
@@ -583,6 +617,7 @@ function scrollFadeOnExpand() {
 </template>
 
 <style scoped>
+
 .reveal {
   position: relative;
   opacity: 0;
@@ -591,9 +626,8 @@ function scrollFadeOnExpand() {
 
 .reveal.active {
   transform: translateY(0px);
-  opacity: 1;
+  opacity: 0;
 }
-
 .reload-button {
   background-color: #ffa941;
   border-radius: 5px;
@@ -601,11 +635,9 @@ function scrollFadeOnExpand() {
   font-size: larger;
   margin-bottom: 10px;
 }
-
 .reload-button:hover {
   border: 1px solid black;
 }
-
 .date-picker {
   border: 1px solid slategray;
   border-radius: 5px;
@@ -616,7 +648,6 @@ function scrollFadeOnExpand() {
   align-items: center;
   justify-content: center;
 }
-
 .no-ideas-message {
   display: flex;
   justify-content: center;
@@ -651,7 +682,7 @@ function scrollFadeOnExpand() {
   text-align: center;
 }
 
-.date-input>div {
+.date-input > div {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -731,7 +762,6 @@ function scrollFadeOnExpand() {
   margin-right: 0.2vw;
   padding-top: 0.3vh;
 }
-
 .all-ideas-view-container {
   display: grid;
   grid-template-columns: 20vw 80vw;
@@ -783,13 +813,10 @@ function scrollFadeOnExpand() {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: calc(50% - 20px);
-  /* 50% width minus margins on both sides */
-  margin: 10px auto;
-  /* Center the ideas horizontally */
+  width: calc(50% - 20px); /* 50% width minus margins on both sides */
+  margin: 10px auto; /* Center the ideas horizontally */
   padding: 10px;
 }
-
 .big-container {
   display: flex;
   justify-content: center;
@@ -843,7 +870,6 @@ function scrollFadeOnExpand() {
 .current-page:hover {
   text-decoration: underline;
 }
-
 .pageSize {
   display: flex;
   justify-content: flex-end;

@@ -56,7 +56,8 @@ const emits = defineEmits([
   "filter-listening",
   "pass-input-variables",
   "generatedStatistics",
-  "pass-rating-variable"
+  "pass-rating-variable",
+    "setIdeasEmpty"
 ]);
 
 watch(
@@ -102,7 +103,7 @@ watch(
 
 watch(ratingSet, (newRatingSet) => {
   if (ratingSet.value.isSet) {
-    emits("pass-rating-variable", newRatingSet.value.ratingNumber)
+    emits("pass-rating-variable", ratingSet.value.ratingNumber)
   }
 }, {deep: true})
 
@@ -163,6 +164,8 @@ watch(ratingSet, async (newValue) => {
 }, { deep: true })
 
 const filter = async () => {
+    
+    emits("setIdeasEmpty", true);
   const title = inputTitle.value;
   const text = inputText.value;
   const category = categoriesSelected.value;
@@ -223,7 +226,7 @@ function clearSelection() {
   ratingSet.value.ratingNumber = 0;
   stars.value = document.querySelectorAll(".star");
   stars.value.forEach((star, index) => {
-      star.style.backgroundPosition = "left -0.2vh";
+    star.style.backgroundImage = "url('@/assets/img/white-star.png')";
   });
 }
 
@@ -421,11 +424,13 @@ function starsEventListener(indexValue) {
     stars.value.forEach((star, index) => {
       star.addEventListener("mouseenter", () => {
         if (index == 0 && !ratingSet.value.isSet) {
-          star.style.backgroundPosition = "left -8.8vh";
+          // star.style.backgroundPosition = "left -8.8vh";
+          star.style.backgroundImage = "url('src/assets/img/orange-star.png')";
         } else if (!ratingSet.value.isSet) {
           let number = index;
           while (number >= 0) {
-            stars.value[number].style.backgroundPosition = "left -8.8vh";
+            // stars.value[number].style.backgroundPosition = "left -8.8vh";
+            stars.value[number].style.backgroundImage = "url('src/assets/img/orange-star.png')";
             number--;
           }
         }
@@ -433,11 +438,13 @@ function starsEventListener(indexValue) {
 
       star.addEventListener("mouseleave", () => {
         if (index == 0 && !ratingSet.value.isSet) {
-          star.style.backgroundPosition = "left -0.2vh";
+          // star.style.backgroundPosition = "left -0.2vh";
+          star.style.backgroundImage = "url('src/assets/img/white-star.png')"
         } else if (!ratingSet.value.isSet) {
           let number = index;
           while (number >= 0) {
-            stars.value[number].style.backgroundPosition = "left -0.2vh";
+            // stars.value[number].style.backgroundPosition = "left -0.2vh";
+            stars.value[number].style.backgroundImage = "url('src/assets/img/white-star.png')"
             number--;
           }
         }
@@ -448,9 +455,11 @@ function starsEventListener(indexValue) {
     if (indexValue !== ratingSet.value.ratingNumber) {
       stars.value.forEach((star, index) => {
         if (index < indexValue) {
-          star.style.backgroundPosition = "left -8.8vh";
+          // star.style.backgroundPosition = "left -8.8vh";
+          star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
         } else {
-          star.style.backgroundPosition = "left -0.2vh";
+          // star.style.backgroundPosition = "left -0.2vh";
+          star.style.backgroundImage = "url('src/assets/img/white-star.png')"
         }
       });
       ratingSet.value.isSet = false;
@@ -484,7 +493,8 @@ async function setRating(indexValue) {
 
   stars.value.forEach((star, index) => {
     if (index < indexValue) {
-      star.style.backgroundPosition = "left -8.8vh";
+      // star.style.backgroundPosition = "left -8.8vh";
+      star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
     }
   });
 }
@@ -616,19 +626,17 @@ async function setRating(indexValue) {
 <style scoped>
 
 .rating-text {
-  margin-top: 0.2vh;
+  margin-top: 0.55vh;
 }
 .star {
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAABQCAYAAAAZQFV3AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABOFJREFUeNrsmEFoHFUYx9/MdHfTJRKzUhBaFiL1YghZCFQUIV6UQJuLWCgr8eKpIoiFSqsHQYrmYj14KHqxKAl6MbA5eCgKRVAMBhpCwIJQCETRQzTsNtnO7s74+17fbGc3M7OzZhUsHfjzdvd97/++973vff99Y/m+rwb5WL0Idz60h2nckTc8Nw2hncLmAnhtIB7i3VGan8VD8Dhebh+U8FOaX8Bh4EB48R8TQlai+QnkgMTxD/AYpFt9EULk0EyBD8Dn4BPT9TZ4CrwD6Wos4V+XrUdpXzQk4tUEkAFXwNUu+1fAWWO7anADLDLJTkCYpf0K3DQe3Ui5oUI6B8ShlyBstZfMMiXoX4MV8GZKQgnJcXA6nKPtGJoE/gZ8Cy6mIJPwnIJsL3ZTIB2h+U6WANZjyE6Aj8Cz3WT7TooJ7HUwneDdc+BaFFnc0SuCzQTCTWOT+iwfN6cjWJ6clo9NzOS5Bcb6IZTZj5pU+syEYNV8XzA2Y6lOCptyhGbDeDFPnJa6TlGZ5rxJ/nxkSRPCACR5EUyHf4sCNjOgENVn/ecVe+CEy8vLWgJmZ2fd1IRra2vxSbe5eYlmu1gsXo6zmZycTKcpkEn6vC61kM+FQYiUeDdvauP5Ay0ZjyIlgKVv9bVkiBwQVJRX2YwWkKLxrhxB+qYSPaxUKrESANHVrh2PlQAzqSbskAA6UkkA5B0SICvRSzb5ddrMWu4jh8umSLwckLVjSKClWJ6SwsrM76fwLpCAM4x1I9OGjhrN8+AkAyYSyGTDnhEHjCPxeYhBagmIIvtXJOBQkgSY5Z01/76umAy4lbpiG5IqzQuG6Alz9LLmf+IP5hh+AfmxnoSQdUgAg5a6JuuQgMiSFi7fJHkR9JQAbGbA/SoBi4uLWgLK5XIqCdBpkyQBZne3sTm4BGxsbLQlgM+DkYBsNjucyWQKaSXATvCuZFnWHIQqlxMVUOeMx/0RMsgBWgIgcyBVgqwwIwH0JUvAwsJChwQwuOQ4jrJtO/CsfQBc11We56lWqyXfOySALNgJdlmuWzNSB/P5vBKyyJnxMjxBs9mc2tvbEye+DN1l7uYhuaZvAXg1LaQyOOkRL3d3d8XLishHOEd1DMfHx7UEYLjCrCop2aXP2Mht4QxjoyWADi0BxGddZm80GjpWYSL5TfpkYnHAOBK/yxhoCZAl1et1PbharWrUajX9m/SJBESRJUlAr6fvW0CvZyyxOIQPN4kbnv1mlwQERGPhMbHli/Q5Yv5lSdDnSYelrlLWIQGRJS1cvjk1RdBTArCZAferBPT7IkjvcuP7t3pKADaxEpB5+r10FXv3x3kKqqUlgM+DkQB76OFhKzdycAnAo5KynTlraFTZQ4/gqH3ursd9EjLIAVoC7KGCAxFWNqSjWgLoS5aAfS+C7EzJcrLKOjSkrNwoFu0ToPz6n8pv3dFQXjPyRdA9CbDsk/ZDx5SQxWiAsg4X7vE361NedQsn/P0SELwIgmzaHiZMtpMcKK+pWlUuVF6j0v0iSMcw/+QFLQF+y13xbv/GpF4CWUt5tV+FTEsAY6MlgA4tASxlnaUo362yLGLlh2Lo1iCjj4nFAeNI/H9sDHbYxesEfcK//XvSoq9Fkf0/JCDqDWfV3I+TJGCLne19CzAvgtoS8OBF0APC6OdvAQYAj2xzC/IfXBsAAAAASUVORK5CYII=");
-  background-position: left -0.2vh;
+  background-image: url("@/assets/img/white-star.png");
   background-size: 3vh;
-  width: 30px;
-  height: 25px;
+  width: 34px;
+  height: 30px;
   float: left;
   cursor: pointer;
+  gap: 100px;
 }
-
-.rating {}
 
 .stars-outer {
   position: relative;

@@ -33,7 +33,6 @@ const inputText = ref("");
 const inputStatus = ref([]);
 const inputCategory = ref([]);
 const inputUser = ref([]);
-const inputRating = ref(0);
 const inputSelectedDateFrom = ref("");
 const inputSelectedDateTo = ref("");
 const isAdmin = ref("");
@@ -49,7 +48,6 @@ let currentUser = [];
 let currentSelectedDateFrom = "";
 let currentSelectedDateTo = "";
 let currentUserRole = "";
-let currentRating = 0;
 
 // fade images variables
 const ideasTransitionContainer = ref(null);
@@ -84,7 +82,6 @@ onMounted(async () => {
     currentStatus,
     currentCategory,
     currentUser,
-    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     currentPage.value - 1,
@@ -191,7 +188,7 @@ function scrollFade() {
       reveals[i].getBoundingClientRect().top -
       ideasTransitionContainer.value.getBoundingClientRect().bottom;
 
-    let distanceBottom = scrollDirection === "down" ? 75 : -130;
+    let distanceBottom = scrollDirection === "down" ? 30 : -30;
 
     let distanceTop = scrollDirection === "down" ? 120 : -80;
 
@@ -200,6 +197,9 @@ function scrollFade() {
     const gapBottom = distanceTop;
 
     // If the card is visible
+
+    // console.log(reveals[4].getBoundingClientRect().top -
+    //   ideasTransitionContainer.value.getBoundingClientRect().bottom)
 
     if (elementTop > gapTop && elementBottom < gapBottom) {
       reveals[i].classList.add("active");
@@ -223,7 +223,7 @@ function scrollFade() {
         // Setting the opacities of the bottom elements to fade in and out
 
 
-        if (elementTop < 100) {
+        if (elementTop < 125) {
           const topOpacityPercentage = -75/50 + (reveals[i].getBoundingClientRect().top -
           ideasTransitionContainer.value.getBoundingClientRect().bottom) / 50;
           reveals[i].style.opacity = `${topOpacityPercentage}`;
@@ -251,21 +251,21 @@ function scrollFade() {
 
       // If the card doesnt respect the conditions, it isn't active anymore and I check which direction it will go
     } else {
-      // reveals[i].classList.remove("active");
+      reveals[i].classList.remove("active");
 
-      // if (
-      //   ideasTransitionContainer.value.clientHeight -
-      //     reveals[i].getBoundingClientRect().bottom >
-      //   -100
-      // ) {
-      //   reveals[i].style.transform = `translateY(-200px)`;
-      // } else if (
-      //   reveals[i].getBoundingClientRect().top -
-      //     ideasTransitionContainer.value.getBoundingClientRect().top >
-      //   50
-      // ) {
-      //   reveals[i].style.transform = `translateY(200px)`;
-      // }
+      if (
+        ideasTransitionContainer.value.clientHeight -
+          reveals[i].getBoundingClientRect().bottom >
+        -100
+      ) {
+        reveals[i].style.transform = `translateY(-200px)`;
+      } else if (
+        reveals[i].getBoundingClientRect().top -
+          ideasTransitionContainer.value.getBoundingClientRect().top >
+        50
+      ) {
+        reveals[i].style.transform = `translateY(200px)`;
+      }
     }
   }
 }
@@ -286,7 +286,6 @@ async function changePage(pageNumber) {
     currentStatus,
     currentCategory,
     currentUser,
-    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     pageNumber - 1,
@@ -327,7 +326,6 @@ function setCurrentVariables() {
   currentStatus = inputStatus.value;
   currentCategory = inputCategory.value;
   currentUser = inputUser.value;
-  currentRating = inputRating.value;
   currentSelectedDateFrom = inputSelectedDateFrom.value;
   currentSelectedDateTo = inputSelectedDateTo.value;
 }
@@ -346,7 +344,6 @@ async function updateSortOrder() {
         currentStatus,
         currentCategory,
         currentUser,
-        currentRating,
         currentSelectedDateFrom,
         currentSelectedDateTo,
         currentPage.value - 1,
@@ -397,7 +394,6 @@ async function updateSortOrder() {
         currentStatus,
         currentCategory,
         currentUser,
-        currentRating,
         currentSelectedDateFrom,
         currentSelectedDateTo,
         currentPage.value - 1,
@@ -464,7 +460,6 @@ async function loadRecievedIdeas(mostCommentedIdeas) {
         currentStatus,
         currentCategory,
         currentUser,
-        currentRating,
         currentSelectedDateFrom,
         currentSelectedDateTo,
         currentPage.value - 1,
@@ -521,6 +516,7 @@ async function loadData() {
 
 async function updateIdeas(filteredIdeas) {
   ideasTransitionContainer.value.style.overflowY = "hidden";
+  
   totalPages.value = Math.ceil(filteredIdeas.totalElements / ideaPerPage.value); // the total nr of pages after filtering needs to be updated
   showTopIdeas.value = false;
 
@@ -544,7 +540,6 @@ async function updateIdeas(filteredIdeas) {
       inputStatus.value,
       inputCategory.value,
       inputUser.value,
-      inputRating.value,
       inputSelectedDateFrom.value,
       inputSelectedDateTo.value,
       currentPage.value - 1,
@@ -570,12 +565,12 @@ async function updateIdeas(filteredIdeas) {
     // }
     // }
   } else {
-    ideas.value = [];
     if (filteredIdeas === "No ideas found.") {
       noIdeasFoundCondition.value = true;
       totalPages.value = 0;
       ideas.value = [];
     } else {
+      ideas.value = [];
       noIdeasFoundCondition.value = false;
       // being sure the current page doesnt go below 0
       currentPage.value = 1;
@@ -602,7 +597,6 @@ async function changeDisplay(pageSize) {
       currentStatus,
       currentCategory,
       currentUser,
-      currentRating,
       currentSelectedDateFrom,
       currentSelectedDateTo,
       currentPage.value - 1,
@@ -651,7 +645,6 @@ const onPassInputVariables = (
   inputStatusParam,
   inputCategoryParam,
   inputUserParam,
-  inputRatingParam,
   inputSelectedDateFromParam,
   inputSelectedDateToParam
 ) => {
@@ -660,7 +653,6 @@ const onPassInputVariables = (
   inputStatus.value = inputStatusParam;
   inputCategory.value = inputCategoryParam;
   inputUser.value = inputUserParam;
-  inputRating.value = inputRatingParam;
   inputSelectedDateFrom.value = inputSelectedDateFromParam;
   inputSelectedDateTo.value = inputSelectedDateToParam;
 };
@@ -701,6 +693,10 @@ function scrollFadeOnExpand() {
   }, 600)
 }
 
+function setIdeasEmptyFunction(){
+  ideas.value = [];
+}
+
 </script>
 
 <template>
@@ -712,6 +708,7 @@ function scrollFadeOnExpand() {
         :currentUser="null"
         :currentPage="currentPage"
         @pass-input-variables="onPassInputVariables"
+        @setIdeasEmpty = "setIdeasEmptyFunction()"
         :ideasPerPage="ideaPerPage"
         :hideUser="false"
         :clear-all="showTopIdeas"
@@ -727,7 +724,7 @@ function scrollFadeOnExpand() {
     >
       <div class="main-container">
         <div
-          v-if="ideas && ideas.length === 0 && !noIdeasFoundCondition"
+          v-if="ideas && ideas.length <= 0 && !noIdeasFoundCondition"
           class="loading-placeholder"
         >
           <CustomLoader :size="100" />
@@ -793,7 +790,7 @@ function scrollFadeOnExpand() {
               />
             </div>
             <div
-              v-if="ideas.length === 0 && noIdeasFoundCondition"
+              v-if="ideas && ideas.length === 0 && noIdeasFoundCondition"
               class="no-ideas-message"
             >
               <img src="../assets/img/curiosity-search.svg" />
@@ -803,7 +800,7 @@ function scrollFadeOnExpand() {
           </div>
         </div>
 
-        <div v-if="ideas && ideas.length > 0" class="pagination-container">
+        <div v-if="ideas.length > 0" class="pagination-container">
           <div class="pagination-component">
             <Pagination
               :totalPages="totalPages"
@@ -884,7 +881,7 @@ h2 {
 
 .reveal.active {
   transform: translateY(0px);
-  opacity: 1;
+  opacity: 0;
 }
 
 .reload-button {
