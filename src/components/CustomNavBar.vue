@@ -385,8 +385,8 @@ nav {
   display: flex;
   justify-content: space-between;
   align-content: center;
-  width: 15vw;
   align-items: center;
+  gap: 1.5vw;
 }
 
 .options {
