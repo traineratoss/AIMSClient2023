@@ -20,7 +20,6 @@ const emits = defineEmits(["loadTop5Ideas", "loadData", "loadTopRatedIdeas"]);
 onMounted(async () => {
   calculateImplementationPercentage();
   showSkeleton.value = false;
-  console.log(" din stats ", stats.value);
 });
 
 // do not touch this , do not touch !!! do not touch , whatever happens , do not touch under any circumstances !!!!
@@ -216,8 +215,8 @@ function getStarRating(index) {
             </div>
           </div>
           <div v-if="props.recievedFilteredStats.mostCommentedIdeas.length === 0" class="most-commented-ideas">
-            <p >Top Most commented ideas:</p>
-            <h4>No comments were posted in this time interval</h4>
+            <p style="font-weight: 700; font-size: medium;">Top Most commented ideas:</p>
+            <h4 class="no-rating-found">No comments were posted in this time interval</h4>
           </div>
 
           <div v-if="stats && stats.topRatedIdeas.length !== 0" class="most-commented-ideas">
@@ -267,7 +266,7 @@ function getStarRating(index) {
               </tr>
               <tr>
                 <td>Ideas per User:</td>
-                <td>{{ stats.ideasPerUser }}</td>
+                <td >{{ stats.ideasPerUser }}</td>
               </tr>
               <tr>
                 <td>Total no. of Comments:</td>
@@ -411,7 +410,7 @@ function getStarRating(index) {
           </div>
           <div v-if="props.recievedFilteredStats.mostCommentedIdeas.length === 0" class="most-commented-ideas">
             <p style="font-weight: 700; font-size: medium;">Top Most commented ideas:</p>
-            <h4>No comments were posted in this time interval</h4>
+            <h4 class="no-rating-found">No comments were posted in this time interval</h4>
           </div>
 
           <div v-if="stats && stats.topRatedIdeas.length !== 0" class="most-commented-ideas">
@@ -448,7 +447,7 @@ function getStarRating(index) {
           </div>
 
           <div v-if="stats && stats.topRatedIdeas.length === 0" class="most-commented-ideas">
-            <p>Top rated ideas:</p>
+            <p style="font-weight: 700; font-size: medium;">Top rated ideas:</p>
             <h4 class="no-rating-found">No rated ideas were found in this time interval</h4>
           </div>
           <div class="most-commented-ideas" style="margin-bottom: 50px">
@@ -475,7 +474,8 @@ function getStarRating(index) {
 .no-rating-found {
   border: 1px solid slategray;
   padding: 15px;
-  border-radius: 5px;
+  font-weight: 600;
+  font-size: small;
 }
 .stars-outer {
   position: relative;

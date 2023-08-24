@@ -15,8 +15,8 @@ import searchValue from "../utils/search-title";
 import CustomInput from "../components/CustomInput.vue";
 import PageSizeSelect from "../components/PageSizeSelect.vue";
 
-const selectedDateFrom = ref();
-const selectedDateTo = ref();
+const selectedDateFrom = ref("");
+const selectedDateTo = ref("");
 const showGenerated = ref(true);
 const showAnimation = ref(true);
 const ideaPerPage = ref(5);

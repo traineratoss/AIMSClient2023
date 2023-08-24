@@ -17,7 +17,7 @@ async function sendDataForCustomStats(selectedDateFrom, selectedDateTo) {
     const newSelectedDateTo =
       today.getUTCFullYear() + "-" + month + "-" + (today.getDate() + 1);
 
-    url = `${API_URL}/filteredStats?&selectedDateFrom=${selectedDateFrom}&selectedDateTo=${newSelectedDateTo}`;
+    url = `${API_URL}/filteredStats?selectedDateFrom=${selectedDateFrom}&selectedDateTo=${newSelectedDateTo}`;
   } else if (
     (selectedDateFrom === undefined || selectedDateFrom === "") &&
     selectedDateTo !== undefined &&
@@ -34,23 +34,24 @@ async function sendDataForCustomStats(selectedDateFrom, selectedDateTo) {
     if (selectedDateTo === newSelectedDateTo) {
       newSelectedDateTo =
         today.getUTCFullYear() + "-" + month + "-" + (today.getDate() + 1);
-      url = `${API_URL}/filteredStats?&selectedDateFrom=2010-01-01&selectedDateTo=${newSelectedDateTo}`;
+      url = `${API_URL}/filteredStats?selectedDateFrom=2010-01-01&selectedDateTo=${newSelectedDateTo}`;
     } else {
-      url = `${API_URL}/filteredStats?&selectedDateFrom=2010-01-01&selectedDateTo=${selectedDateTo}`;
+      url = `${API_URL}/filteredStats?selectedDateFrom=2010-01-01&selectedDateTo=${selectedDateTo}`;
     }
   } else if (
     (selectedDateFrom === undefined || selectedDateFrom === "") &&
     (selectedDateTo === undefined || selectedDateTo === "")
   ) {
-    const today = new Date();
-    const month =
-      today.getMonth() < 9
-        ? "0" + (today.getMonth() + 1)
-        : today.getMonth() + 1;
+    // const today = new Date();
+    // const month =
+    //   today.getMonth() < 9
+    //     ? "0" + (today.getMonth() + 1)
+    //     : today.getMonth() + 1;
 
-    let newSelectedDateTo =
-      today.getUTCFullYear() + "-" + month + "-" + (today.getDate() + 1);
-    url = `${API_URL}/filteredStats?&selectedDateFrom=2010-01-01&selectedDateTo=${newSelectedDateTo}`;
+    // let newSelectedDateTo =
+    //   today.getUTCFullYear() + "-" + month + "-" + (today.getDate() + 1);
+    // url = `${API_URL}/filteredStats?selectedDateFrom=2010-01-01&selectedDateTo=${newSelectedDateTo}`;
+    url = `${API_URL}/stats`
   } else {
     const today = new Date();
     const month =
@@ -63,9 +64,9 @@ async function sendDataForCustomStats(selectedDateFrom, selectedDateTo) {
     if (selectedDateTo === newSelectedDateTo) {
       newSelectedDateTo =
         today.getUTCFullYear() + "-" + month + "-" + (today.getDate() + 1);
-      url = `${API_URL}/filteredStats?&selectedDateFrom=${selectedDateFrom}&selectedDateTo=${newSelectedDateTo}`;
+      url = `${API_URL}/filteredStats?selectedDateFrom=${selectedDateFrom}&selectedDateTo=${newSelectedDateTo}`;
     } else
-      url = `${API_URL}/filteredStats?&selectedDateFrom=${selectedDateFrom}&selectedDateTo=${selectedDateTo}`;
+      url = `${API_URL}/filteredStats?selectedDateFrom=${selectedDateFrom}&selectedDateTo=${selectedDateTo}`;
   }
 
   const response = await fetch(url, {
