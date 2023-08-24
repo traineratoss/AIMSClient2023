@@ -124,12 +124,12 @@ onMounted(async () => {
 
 stats.value = await getStats();
 
-watch(ideas, (newValue) => {
-  if (ideas.value.length == 0) {
-    showTopIdeas.value = false;
-    showTopRatedIdeas.value = false;
-  }
-})
+// watch(ideas, (newValue) => {
+//   if (ideas.value.length == 0 && (showTopIdeas.value == false && showTopRatedIdeas.value == false)) {
+//     showTopIdeas.value = false;
+//     showTopRatedIdeas.value = false;
+//   }
+// })
 
 watch(searchValue, async (newValue) => {
   if (newValue && newValue.key === "Enter" && newValue.text !== undefined) {
@@ -876,7 +876,7 @@ function setIdeasEmptyFunction() {
             </div>
           </div>
           <div class="ideas-transition-container" ref="ideasTransitionContainer">
-            <h2 v-if="showTopIdeas && !showTopRatedIdeas">Top ideas</h2>
+            <h2 v-if="showTopIdeas && !showTopRatedIdeas">Top commented ideas</h2>
             <h2 v-if="!showTopIdeas && showTopRatedIdeas">Top rated ideas</h2>
 
             <div v-for="idea in ideas" :key="idea.id" class="idea-transition-item reveal">
