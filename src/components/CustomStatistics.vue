@@ -55,9 +55,16 @@ watch(
   }
 );
 
-watch(() => props.showAnimation, (newValue) => {
-  console.log(newValue)
-})
+watch(
+  () => props.recievedFilteredStats,
+  (newValue) => {
+    stats.value = newValue;
+  }
+);
+
+// watch(() => props.showAnimation, (newValue) => {
+//   console.log(newValue)
+// })
 async function calculateImplementationPercentage() {
   if (props.recievedFilteredStats.nrOfIdeas > 0) {
     implementationPercentage.value = Math.round(
@@ -417,10 +424,10 @@ function getStarRating(index) {
               </tr>
               <tr v-for="(idea, index) in stats.topRatedIdeas" :key="index">
                 <td style="border-right: 1px solid slategray;">
-                  {{ getShortenedTitle(stats.topRatedIdeas[index].title, 25) }}
+                  {{ getShortenedTitle(idea.title, 25) }}
                 </td>
                 <td style="border-right: 1px solid slategray;">
-                  {{ getShortenedTitle(stats.topRatedIdeas[index].username, 14) }}
+                  {{ getShortenedTitle(idea.username, 14) }}
                 </td>
                 <td>
                   <div class="stars-outer">
