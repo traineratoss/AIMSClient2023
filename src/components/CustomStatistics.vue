@@ -98,10 +98,13 @@ function getShortenedTitle(title, maxLength) {
   return title.length > maxLength ? title.substr(0, maxLength) + "..." : title;
 }
 
-function getStarRating(ratingAverage) {
-  const starPercentage = (ratingAverage.value / 5) * 100;
+function getStarRating(index) {
 
-  return (starPercentage ) + "%";
+  const value = stats.value.topRatedIdeas[index].ratingAverage
+
+  const starPercentage = (value / 5) * 100;
+
+  return (starPercentage + 3) + "%";
 }
 </script>
 
@@ -214,7 +217,7 @@ function getStarRating(ratingAverage) {
                 </td>
                 <td>
                   <div class="stars-outer">
-                    <div class="stars-inner" :style="{ width: getStarRating(stats.topRatedIdeas[index].ratingAverage) }"></div>
+                    <div class="stars-inner" :style="{ width: getStarRating(index) }"></div>
                   </div>
                 </td>
               </tr>
