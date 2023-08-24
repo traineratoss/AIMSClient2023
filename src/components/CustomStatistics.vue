@@ -161,7 +161,7 @@ function getStarRating(index) {
               :implementedIdeasNumber="stats.implementedIdeas" :draftIdeasNumber="stats.draftIdeas" />
           </div>
           <div v-if="props.recievedFilteredStats.mostCommentedIdeas.length !== 0" class="most-commented-ideas">
-            <p>Top most commented ideas:</p>
+            <p style="font-weight: 700; font-size: medium;">Top most commented ideas:</p>
             <table id="idea-table">
               <tr>
                 <th>Idea title</th>
@@ -209,12 +209,12 @@ function getStarRating(index) {
             </div>
           </div>
           <div v-if="props.recievedFilteredStats.mostCommentedIdeas.length === 0" class="most-commented-ideas">
-            <p>Top Most commented ideas:</p>
+            <p >Top Most commented ideas:</p>
             <h4>No comments were posted in this time interval</h4>
           </div>
 
           <div v-if="stats && stats.topRatedIdeas.length !== 0" class="most-commented-ideas">
-            <p>Top rated ideas:</p>
+            <p style="font-weight: 700; font-size: medium;">Top rated ideas:</p>
             <table id="idea-table">
               <tr>
                 <th>Idea title</th>
@@ -247,12 +247,12 @@ function getStarRating(index) {
           </div>
 
           <div v-if="stats && stats.topRatedIdeas.length === 0" class="most-commented-ideas">
-            <p>Top rated ideas:</p>
+            <p style="font-weight: 700; font-size: medium;">Top rated ideas:</p>
             <h4 class="no-rating-found">No rated ideas were found in this time interval</h4>
           </div>
 
           <div class="most-commented-ideas" style="margin-bottom: 50px">
-            <p>General information:</p>
+            <p style="font-weight: 700; font-size: medium;">General information:</p>
             <table id="idea-table">
               <tr>
                 <td>Number of Users:</td>
@@ -301,7 +301,7 @@ function getStarRating(index) {
             </Suspense>
           </div>
           <div v-if="props.recievedFilteredStats.mostCommentedIdeas.length !== 0" class="most-commented-ideas">
-            <p>Top Most commented ideas :</p>
+            <p style="font-weight: 700; font-size: medium;">Top Most commented ideas :</p>
             <table id="idea-table">
               <tr>
                 <th>Idea title</th>
@@ -403,11 +403,49 @@ function getStarRating(index) {
             </div>
           </div>
           <div v-if="props.recievedFilteredStats.mostCommentedIdeas.length === 0" class="most-commented-ideas">
-            <p>Top Most commented ideas:</p>
+            <p style="font-weight: 700; font-size: medium;">Top Most commented ideas:</p>
             <h4>No comments were posted in this time interval</h4>
           </div>
+
+          <div v-if="stats && stats.topRatedIdeas.length !== 0" class="most-commented-ideas">
+            <p style="font-weight: 700; font-size: medium;">Top rated ideas:</p>
+            <table id="idea-table">
+              <tr>
+                <th>Idea title</th>
+                <th>Posted by</th>
+                <th>Rating</th>
+              </tr>
+              <tr v-for="(idea, index) in stats.topRatedIdeas" :key="index">
+                <td style="border-right: 1px solid slategray;">
+                  {{ getShortenedTitle(stats.topRatedIdeas[index].title, 25) }}
+                </td>
+                <td style="border-right: 1px solid slategray;">
+                  {{ getShortenedTitle(stats.topRatedIdeas[index].username, 14) }}
+                </td>
+                <td>
+                  <div class="stars-outer">
+                    <div class="stars-inner" :style="{ width: getStarRating(index) }"></div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+            <div class="swich-buttons">
+              <button class="load-button" @click="loadTopRatedIdeas()">
+                {{ !showTopRatedIdeas ? "Load top rated ideas" : "Load all Ideas" }}
+              </button>
+
+              <!-- <button class="load-button" @click="refreshStats()">
+                Refresh
+              </button> -->
+            </div>
+          </div>
+
+          <div v-if="stats && stats.topRatedIdeas.length === 0" class="most-commented-ideas">
+            <p>Top rated ideas:</p>
+            <h4 class="no-rating-found">No rated ideas were found in this time interval</h4>
+          </div>
           <div class="most-commented-ideas" style="margin-bottom: 50px">
-            <p>General information for the selected time interval:</p>
+            <p style="font-weight: 700; font-size: medium;">General information for the selected time interval:</p>
             <table id="idea-table">
               <tr>
                 <td>Total no. of Comments:</td>
