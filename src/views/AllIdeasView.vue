@@ -199,13 +199,7 @@ function scrollFade() {
 
     const gapBottom = distanceTop;
 
-    console.log(reveals[0].getBoundingClientRect().bottom -
-      ideasTransitionContainer.value.getBoundingClientRect().top)
-
     // If the card is visible
-
-    // console.log(reveals[4].getBoundingClientRect().top -
-    //   ideasTransitionContainer.value.getBoundingClientRect().bottom)
 
     if (elementTop > gapTop && elementBottom < gapBottom) {
       reveals[i].classList.add("active");
@@ -333,6 +327,7 @@ function setCurrentVariables() {
   currentStatus = inputStatus.value;
   currentCategory = inputCategory.value;
   currentUser = inputUser.value;
+  currentRating = inputRating.value;
   currentSelectedDateFrom = inputSelectedDateFrom.value;
   currentSelectedDateTo = inputSelectedDateTo.value;
 }
@@ -732,7 +727,7 @@ function scrollFadeOnExpand() {
     >
       <div class="main-container">
         <div
-          v-if="ideas.length === 0 && !noIdeasFoundCondition"
+          v-if="ideas && ideas.length === 0 && !noIdeasFoundCondition"
           class="loading-placeholder"
         >
           <CustomLoader :size="100" />
@@ -808,7 +803,7 @@ function scrollFadeOnExpand() {
           </div>
         </div>
 
-        <div v-if="ideas.length > 0" class="pagination-container">
+        <div v-if="ideas && ideas.length > 0" class="pagination-container">
           <div class="pagination-component">
             <Pagination
               :totalPages="totalPages"

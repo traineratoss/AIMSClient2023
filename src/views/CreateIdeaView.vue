@@ -615,10 +615,6 @@ function onMountStars() {
 function getStarRating(userRating) {
   const starPercentage = (userRating / 5) * 100;
 
-  console.log(userRating)
-
-  // const starPercentageRounded = Math.round(starPercentage / 10) * 10;
-
   return starPercentage + "%";
 }
 
@@ -840,7 +836,7 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
         <div class="list-of-raters" v-if="canStarsAppear && disableFields && currentIdeaViewMode
           && currentIdeaViewMode.username == getCurrentUsername()" style="">
           <div class="rater-stars" v-for="(rater, index) in raters" :key="index">
-            <div class="rater-name" v-if="raters.length > 0">{{ getShortText(rater.userUsername, 1, 8) }}</div>
+            <div class="rater-name" v-if="raters.length > 0">{{ getShortText(rater.userUsername, 1, 14) }}</div>
             <div class="stars-outer" v-if="raters.length > 0">
               <div class="stars-inner" :style="{ width: getStarRating(rater.ratingNumber) }"></div>
             </div>
@@ -984,7 +980,8 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 1s
+  animation: fadeIn 1s;
+  margin-top: 3vh;
 }
 
 @keyframes fadeIn {

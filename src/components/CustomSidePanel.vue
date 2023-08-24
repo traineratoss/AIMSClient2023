@@ -56,6 +56,7 @@ const emits = defineEmits([
   "filter-listening",
   "pass-input-variables",
   "generatedStatistics",
+  "pass-rating-variable"
 ]);
 
 watch(
@@ -74,7 +75,6 @@ watch(
     statusSelected,
     categoriesSelected,
     userSelected,
-    ratingSet.value.ratingNumber,
     selectedDateFrom,
     selectedDateTo,
   ],
@@ -84,7 +84,6 @@ watch(
     newStatusSelected,
     newCategoriesSelected,
     newUserSelected,
-    newRatingSelected,
     newSelectedDateFrom,
     newSelectedDateTo,
   ]) => {
@@ -95,12 +94,17 @@ watch(
       newStatusSelected,
       newCategoriesSelected,
       newUserSelected,
-      newRatingSelected,
       newSelectedDateFrom,
       newSelectedDateTo
     );
   }
 );
+
+watch(ratingSet, (newRatingSet) => {
+  if (ratingSet.value.isSet) {
+    emits("pass-rating-variable", newRatingSet.value.ratingNumber)
+  }
+}, {deep: true})
 
 watch(searchValue, (newValue) => {
   if (newValue && newValue.text !== undefined) {
@@ -187,8 +191,6 @@ const filter = async () => {
     props.sort
   );
 
-  console.log(filteredIdeas);
-
   if (filteredIdeas === "No ideas found.") {
     filteredIdeasEmit.value = {
       content: [],
@@ -197,7 +199,6 @@ const filter = async () => {
     };
   } else {
     filteredIdeasEmit.value = filteredIdeas;
-    console.log(filteredIdeasEmit.value);
   }
 };
 
@@ -325,7 +326,6 @@ watch(userSelected, () => {
 
 function removeSelection(selectionType, index) {
   const indexValue = index;
-  console.log(selectionType);
   switch (selectionType) {
     case "statusType":
       statusSelected.value = statusSelected.value.filter(
@@ -468,6 +468,14 @@ function onMountStars() {
   }
 }
 
+function leaveStar(indexValue) {
+  if (ratingSet.value.isSet) {
+    ratingSet.value.ratingNumber = indexValue;
+  } else {
+    ratingSet.value.ratingNumber = 0;
+  }
+}
+
 
 async function setRating(indexValue) {
   stars.value = document.querySelectorAll(".star");
@@ -479,12 +487,6 @@ async function setRating(indexValue) {
       star.style.backgroundPosition = "left -8.8vh";
     }
   });
-
-  await addRatingToIdea(
-    ideaId,
-    ratingSet.value.ratingNumber,
-    getCurrentUsername()
-  );
 }
 
 </script>
@@ -501,20 +503,20 @@ async function setRating(indexValue) {
       </div>
 
       <div class="top-container-child">
-        <span class="title"> Title: </span>
+        <span class="title"> Title : </span>
         <CustomInput v-model="inputTitle" :placeholder="`Write a title...`" :can-modify-search-value="true"
           :widthInPx="13" :height-in-px="2.5" :style="{ 'background-color': 'white', 'font-weight': '370' }" />
       </div>
 
       <div class="top-container-child">
-        <span class="text">Text:</span>
+        <span class="text">Text :</span>
         <CustomInput v-model="inputText" class="text-input" :placeholder="`Write a text...`"
           :can-modify-search-value="false" :widthInPx="13" :height-in-px="2.5"
           :style="{ 'background-color': 'white', 'font-weight': '370' }" />
       </div>
 
       <div class="top-container-child">
-        <span :class="statusSelected.length > 0 ? 'status2' : 'status'">Status:</span>
+        <span :class="statusSelected.length > 0 ? 'status2' : 'status'">Status :</span>
 
         <div class="top-container-child-dropdown">
           <CustomDropDown :variants="statusOptions" @update:selectedOptions="handleSelectedStatus"
@@ -532,7 +534,7 @@ async function setRating(indexValue) {
       </div>
 
       <div class="top-container-child">
-        <span :class="categoriesSelected.length > 0 ? 'category2' : 'category'">Category:</span>
+        <span :class="categoriesSelected.length > 0 ? 'category2' : 'category'">Category :</span>
 
         <div class="top-container-child-dropdown">
           <CustomDropDown :variants="categoryOptions" @update:selectedOptions="handleSelectedCategories"
@@ -551,7 +553,7 @@ async function setRating(indexValue) {
 
       <div class="top-container-child" v-if="!hideUser">
         <span :class="userSelected.length > 0 ? 'user2' : 'user'"
-          :style="{ visibility: hideUser ? 'hidden' : 'visible' }">User:</span>
+          :style="{ visibility: hideUser ? 'hidden' : 'visible' }">User :</span>
 
         <div class="top-container-child-dropdown">
           <CustomDropDown :style="{ visibility: hideUser ? 'hidden' : 'visible' }" :variants="userOptions"
@@ -569,8 +571,8 @@ async function setRating(indexValue) {
         </div>
       </div>
 
-      <div class="top-container-child">
-        <span :class="statusSelected.length > 0 ? 'status2' : 'status'">Rating:</span>
+      <div class="top-container-child-rating">
+        <span class="rating-text">Min. Rating:</span>
         <div class="rating" style="overflow: hidden" @mouseenter="onMountStars()">
           <i class="star" @click="setRating(1)" @mouseenter="starsEventListener(1), ratingSet.ratingNumber = 1"
             @mouseleave="leaveStar(1)"></i>
@@ -612,6 +614,10 @@ async function setRating(indexValue) {
 </template>
 
 <style scoped>
+
+.rating-text {
+  margin-top: 0.2vh;
+}
 .star {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAABQCAYAAAAZQFV3AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABOFJREFUeNrsmEFoHFUYx9/MdHfTJRKzUhBaFiL1YghZCFQUIV6UQJuLWCgr8eKpIoiFSqsHQYrmYj14KHqxKAl6MbA5eCgKRVAMBhpCwIJQCETRQzTsNtnO7s74+17fbGc3M7OzZhUsHfjzdvd97/++973vff99Y/m+rwb5WL0Idz60h2nckTc8Nw2hncLmAnhtIB7i3VGan8VD8Dhebh+U8FOaX8Bh4EB48R8TQlai+QnkgMTxD/AYpFt9EULk0EyBD8Dn4BPT9TZ4CrwD6Wos4V+XrUdpXzQk4tUEkAFXwNUu+1fAWWO7anADLDLJTkCYpf0K3DQe3Ui5oUI6B8ShlyBstZfMMiXoX4MV8GZKQgnJcXA6nKPtGJoE/gZ8Cy6mIJPwnIJsL3ZTIB2h+U6WANZjyE6Aj8Cz3WT7TooJ7HUwneDdc+BaFFnc0SuCzQTCTWOT+iwfN6cjWJ6clo9NzOS5Bcb6IZTZj5pU+syEYNV8XzA2Y6lOCptyhGbDeDFPnJa6TlGZ5rxJ/nxkSRPCACR5EUyHf4sCNjOgENVn/ecVe+CEy8vLWgJmZ2fd1IRra2vxSbe5eYlmu1gsXo6zmZycTKcpkEn6vC61kM+FQYiUeDdvauP5Ay0ZjyIlgKVv9bVkiBwQVJRX2YwWkKLxrhxB+qYSPaxUKrESANHVrh2PlQAzqSbskAA6UkkA5B0SICvRSzb5ddrMWu4jh8umSLwckLVjSKClWJ6SwsrM76fwLpCAM4x1I9OGjhrN8+AkAyYSyGTDnhEHjCPxeYhBagmIIvtXJOBQkgSY5Z01/76umAy4lbpiG5IqzQuG6Alz9LLmf+IP5hh+AfmxnoSQdUgAg5a6JuuQgMiSFi7fJHkR9JQAbGbA/SoBi4uLWgLK5XIqCdBpkyQBZne3sTm4BGxsbLQlgM+DkYBsNjucyWQKaSXATvCuZFnWHIQqlxMVUOeMx/0RMsgBWgIgcyBVgqwwIwH0JUvAwsJChwQwuOQ4jrJtO/CsfQBc11We56lWqyXfOySALNgJdlmuWzNSB/P5vBKyyJnxMjxBs9mc2tvbEye+DN1l7uYhuaZvAXg1LaQyOOkRL3d3d8XLishHOEd1DMfHx7UEYLjCrCop2aXP2Mht4QxjoyWADi0BxGddZm80GjpWYSL5TfpkYnHAOBK/yxhoCZAl1et1PbharWrUajX9m/SJBESRJUlAr6fvW0CvZyyxOIQPN4kbnv1mlwQERGPhMbHli/Q5Yv5lSdDnSYelrlLWIQGRJS1cvjk1RdBTArCZAferBPT7IkjvcuP7t3pKADaxEpB5+r10FXv3x3kKqqUlgM+DkQB76OFhKzdycAnAo5KynTlraFTZQ4/gqH3ursd9EjLIAVoC7KGCAxFWNqSjWgLoS5aAfS+C7EzJcrLKOjSkrNwoFu0ToPz6n8pv3dFQXjPyRdA9CbDsk/ZDx5SQxWiAsg4X7vE361NedQsn/P0SELwIgmzaHiZMtpMcKK+pWlUuVF6j0v0iSMcw/+QFLQF+y13xbv/GpF4CWUt5tV+FTEsAY6MlgA4tASxlnaUo362yLGLlh2Lo1iCjj4nFAeNI/H9sDHbYxesEfcK//XvSoq9Fkf0/JCDqDWfV3I+TJGCLne19CzAvgtoS8OBF0APC6OdvAQYAj2xzC/IfXBsAAAAASUVORK5CYII=");
   background-position: left -0.2vh;
@@ -731,6 +737,11 @@ span {
   grid-template-columns: 30% 70%;
 }
 
+.top-container-child-rating {
+  display: grid;
+  grid-template-columns: 30% 70%;
+}
+
 .top-container-child-dropdown {
   display: grid;
   grid-template-rows: 50% 50%;
@@ -830,6 +841,7 @@ span {
   height: 94vh;
   grid-template-rows: 50% 50%;
   border-right: 1px solid slategray;
+  background-color: #0000001c;
 }
 
 #clear-all-button {
