@@ -57,7 +57,7 @@ const emits = defineEmits([
   "pass-input-variables",
   "generatedStatistics",
   "pass-rating-variable",
-    "setIdeasEmpty"
+  "setIdeasEmpty"
 ]);
 
 watch(
@@ -103,8 +103,16 @@ watch(
 
 watch(ratingSet, (newRatingSet) => {
   if (ratingSet.value.isSet) {
-    emits("pass-rating-variable", ratingSet.value.ratingNumber)
+    setTimeout(() => {
+      emits("pass-rating-variable", ratingSet.value.ratingNumber)
+    }, 10)
+  } else {
+    setTimeout(() => {
+      emits("pass-rating-variable", ratingSet.value.ratingNumber)
+    }, 10)
   }
+
+  console.log(ratingSet.value)
 }, {deep: true})
 
 watch(searchValue, (newValue) => {

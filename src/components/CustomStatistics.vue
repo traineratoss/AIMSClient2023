@@ -177,7 +177,7 @@ function getShortenedTitle(title, maxLength) {
             </table>
             <div class="swich-buttons">
               <button class="load-button" @click="loadTop5Ideas()">
-                {{ !showTopIdeas ? "Load top ideas" : "Load all Ideas" }}
+                {{ !showTopIdeas ? "Load top commented ideas" : "Load all Ideas" }}
               </button>
 
               <!-- <button class="load-button" @click="refreshStats()">
@@ -378,7 +378,7 @@ function getShortenedTitle(title, maxLength) {
   background-color: white;
   height: 30px;
   text-align: center;
-  width: 5.5vw;
+  width: 10vw;
   border-radius: 3px;
   cursor: pointer;
 }

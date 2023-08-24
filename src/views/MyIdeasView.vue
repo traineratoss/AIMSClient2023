@@ -26,6 +26,7 @@ const inputText = ref("");
 const inputStatus = ref([]);
 const inputCategory = ref([]);
 const inputUser = ref([]);
+const inputRating = ref(0);
 const inputSelectedDateFrom = ref("");
 const inputSelectedDateTo = ref("");
 
@@ -39,6 +40,7 @@ let currentCategory = [];
 let currentUser = [];
 let currentSelectedDateFrom = "";
 let currentSelectedDateTo = "";
+let currentRating = 0;
 
 const implementedIdeasCount = ref(0);
 const implementationPercentage = ref(0);
@@ -71,6 +73,7 @@ onMounted(async () => {
     currentStatus,
     currentCategory,
     currentUser,
+    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     currentPage.value - 1,
@@ -110,6 +113,7 @@ watch(searchValue, async (newValue) => {
       currentStatus,
       currentCategory,
       currentUser,
+      currentRating,
       currentSelectedDateFrom,
       currentSelectedDateTo,
       currentPage.value - 1,
@@ -264,6 +268,7 @@ async function changePage(pageNumber) {
     currentStatus,
     currentCategory,
     currentUser,
+    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     pageNumber - 1,
@@ -314,6 +319,7 @@ async function updateSortOrder() {
       currentStatus,
       currentCategory,
       currentUser,
+      currentRating,
       currentSelectedDateFrom,
       currentSelectedDateTo,
       currentPage.value - 1,
@@ -346,6 +352,7 @@ async function updateSortOrder() {
       currentStatus,
       currentCategory,
       currentUser,
+      currentRating,
       currentSelectedDateFrom,
       currentSelectedDateTo,
       currentPage.value - 1,
@@ -396,6 +403,7 @@ async function updateIdeas(filteredIdeas) {
       inputStatus.value,
       inputCategory.value,
       inputUser.value,
+      inputRating.value,
       inputSelectedDateFrom.value,
       inputSelectedDateTo.value,
       currentPage.value - 1,
@@ -460,6 +468,12 @@ const onPassInputVariables = (
   inputSelectedDateTo.value = inputSelectedDateToParam;
 };
 
+const onPassRatingVariable = (
+  inputRatingParam
+) => {
+  inputRating.value = inputRatingParam;
+};
+
 //if the item has an image in the db, we return it. if not, we return a default one
 const getImageUrl = (item) => {
   if (item && item.image) {
@@ -482,6 +496,7 @@ async function changeDisplay(pageSize) {
     currentStatus,
     currentCategory,
     currentUser,
+    currentRating,
     currentSelectedDateFrom,
     currentSelectedDateTo,
     currentPage.value - 1,
@@ -531,6 +546,7 @@ function setIdeasEmptyFunction(){
         :currentUser="getCurrentUsername()"
         :currentPage="currentPage"
         @pass-input-variables="onPassInputVariables"
+        @pass-rating-variable="onPassRatingVariable"
         @setIdeasEmpty = "setIdeasEmptyFunction()"
         :ideasPerPage="ideaPerPage"
         :hideUser="true"
