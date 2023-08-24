@@ -995,7 +995,6 @@ h2 {
   display: grid;
   grid-template-rows: 7vh 12vh 5vh;
   background-color: white;
-  border-bottom: 1px solid slategray;
 }
 
 .select-date {

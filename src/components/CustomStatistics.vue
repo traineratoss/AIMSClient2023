@@ -218,11 +218,15 @@ function getStarRating(index) {
             <table id="idea-table">
               <tr>
                 <th>Idea title</th>
+                <th>Posted by</th>
                 <th>Rating</th>
               </tr>
               <tr v-for="(idea, index) in stats.topRatedIdeas" :key="index">
-                <td>
+                <td style="border-right: 1px solid slategray;">
                   {{ getShortenedTitle(stats.topRatedIdeas[index].title, 20) }}
+                </td>
+                <td style="border-right: 1px solid slategray;">
+                  {{ getShortenedTitle(stats.topRatedIdeas[index].username, 20) }}
                 </td>
                 <td>
                   <div class="stars-outer">
@@ -571,6 +575,7 @@ strong {
   height: 70vh;
   overflow: auto;
   margin-bottom: 15vh;
+  border-top: 1px solid slategray;
 }
 
 .stats-container::-webkit-scrollbar {
