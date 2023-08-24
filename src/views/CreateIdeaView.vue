@@ -1082,7 +1082,7 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
 .star {
   background-image: url("@/assets/img/white-star.png");
   background-size: 3vh;
-  width: 34px;
+  width: 33px;
   height: 30px;
   float: left;
   cursor: pointer;

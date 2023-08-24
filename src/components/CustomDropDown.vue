@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, defineProps, watch, watchEffect, nextTick } from "vue";
+import CustomLoader from "../components/CustomLoader.vue";
 
 const emit = defineEmits(["update:selectedOptions", "filter-data"]);
 
@@ -235,7 +236,7 @@ function getInputPlaceholder() {
         width: props.widthInVw ? props.widthInVw + 'vw' : {},
       }"
     >
-      <label v-for="(variant, index) in allVariantsReactive" :key="index">
+      <label v-if="allVariantsReactive && allVariantsReactive.length > 0" v-for="(variant, index) in allVariantsReactive" :key="index">
         <input
           type="checkbox"
           :value="variant"
@@ -244,6 +245,9 @@ function getInputPlaceholder() {
         />
         {{ variant }}
       </label>
+      <div v-if="allVariantsReactive && allVariantsReactive.length ===0" style="overflow: hidden;">
+        <CustomLoader :size="30" />
+      </div>
     </div>
   </div>
 </template>
