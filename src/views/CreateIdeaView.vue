@@ -80,14 +80,6 @@ onMounted(async () => {
   // const imageUrl = `data:image/${dataImage.fileType};name=${dataImage.fileName};base64,${dataImage.base64Image}`
   slideImages.value = imageUrl;
 
-  const response = await getIdea(ideaId);
-
-  currentIdeaViewMode.value = await response;
-
-  currentIdeaViewMode.value.ratings.forEach((rating, index) => {
-    raters.value.push(rating)
-  })
-
   if (updatedIdea.value == null) {
     categoriesSelected.value = [];
   }
@@ -95,57 +87,69 @@ onMounted(async () => {
   const categoryNames = dataCategory.map((category) => category.text);
   categoryOptions.value = categoryNames;
 
-  const allRatings = await currentIdeaViewMode.value.ratings;
+  if (ideaId !== undefined && ideaId !== null) {
+    const response = await getIdea(ideaId);
 
-  if (allRatings.length == 0) {
-    canStarsAppear.value = true;
-  }
-  allRatings.forEach((rating, index) => {
-    if (rating.userUsername == getCurrentUsername()) {
-      canStarsAppear.value = true;
-      ratingSet.value.isSet = true;
-      ratingSet.value.ratingNumber = rating.ratingNumber;
+    currentIdeaViewMode.value = await response;
 
-      setTimeout(() => {
-        stars.value = document.querySelectorAll(".star");
-        stars.value.forEach((star, index) => {
-          if (index < ratingSet.value.ratingNumber) {
-            star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
-          } else {
-            star.style.backgroundImage = "url('src/assets/img/white-star.png')"
-          }
+    currentIdeaViewMode.value.ratings.forEach((rating, index) => {
+      raters.value.push(rating)
+    })
 
-          star.addEventListener("mouseenter", () => {
-            if (index == 0 && !ratingSet.value.isSet) {
-              star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
-            } else if (!ratingSet.value.isSet) {
-              let number = index;
-              while (number >= 0) {
-                stars.value[number].style.backgroundImage = "url('src/assets/img/orange-star.png')"
-                number--;
-              }
-            }
-          });
+    const allRatings = await currentIdeaViewMode.value.ratings;
 
-
-          star.addEventListener("mouseleave", () => {
-            if (index == 0 && !ratingSet.value.isSet) {
-              star.style.backgroundImage = "url('src/assets/img/white-star.png')"
-            } else if (!ratingSet.value.isSet) {
-              let number = index;
-              while (number >= 0) {
-                stars.value[number].style.backgroundImage = "url('src/assets/img/white-star.png')"
-                number--;
-              }
-            }
-          });
-
-        });
-      }, 0)
-    } else {
+    if (allRatings.length == 0) {
       canStarsAppear.value = true;
     }
-  });
+    allRatings.forEach((rating, index) => {
+      if (rating.userUsername == getCurrentUsername()) {
+        canStarsAppear.value = true;
+        ratingSet.value.isSet = true;
+        ratingSet.value.ratingNumber = rating.ratingNumber;
+
+        setTimeout(() => {
+          stars.value = document.querySelectorAll(".star");
+          stars.value.forEach((star, index) => {
+            if (index < ratingSet.value.ratingNumber) {
+              star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
+            } else {
+              star.style.backgroundImage = "url('src/assets/img/white-star.png')"
+            }
+
+            star.addEventListener("mouseenter", () => {
+              if (index == 0 && !ratingSet.value.isSet) {
+                star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
+              } else if (!ratingSet.value.isSet) {
+                let number = index;
+                while (number >= 0) {
+                  stars.value[number].style.backgroundImage = "url('src/assets/img/orange-star.png')"
+                  number--;
+                }
+              }
+            });
+
+
+            star.addEventListener("mouseleave", () => {
+              if (index == 0 && !ratingSet.value.isSet) {
+                star.style.backgroundImage = "url('src/assets/img/white-star.png')"
+              } else if (!ratingSet.value.isSet) {
+                let number = index;
+                while (number >= 0) {
+                  stars.value[number].style.backgroundImage = "url('src/assets/img/white-star.png')"
+                  number--;
+                }
+              }
+            });
+
+          });
+        }, 0)
+      } else {
+        canStarsAppear.value = true;
+      }
+    });
+  }
+
+
 
 });
 

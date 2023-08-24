@@ -223,10 +223,10 @@ function getStarRating(index) {
               </tr>
               <tr v-for="(idea, index) in stats.topRatedIdeas" :key="index">
                 <td style="border-right: 1px solid slategray;">
-                  {{ getShortenedTitle(stats.topRatedIdeas[index].title, 20) }}
+                  {{ getShortenedTitle(stats.topRatedIdeas[index].title, 25) }}
                 </td>
                 <td style="border-right: 1px solid slategray;">
-                  {{ getShortenedTitle(stats.topRatedIdeas[index].username, 20) }}
+                  {{ getShortenedTitle(stats.topRatedIdeas[index].username, 14) }}
                 </td>
                 <td>
                   <div class="stars-outer">
