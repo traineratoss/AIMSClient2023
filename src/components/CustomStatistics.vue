@@ -14,7 +14,7 @@ const props = defineProps({
   showTopIdeas: Boolean,
 });
 
-const emits = defineEmits(["loadTop5Ideas", "loadData"]);
+const emits = defineEmits(["loadTop5Ideas", "loadData", "loadTopRatedIdeas"]);
 
 onMounted(async () => {
   calculateImplementationPercentage();
@@ -76,6 +76,11 @@ function loadTop5Ideas() {
   emits("loadTop5Ideas", props.recievedFilteredStats.mostCommentedIdeas);
 }
 
+function loadTopRatedIdeas() {
+
+  emits("loadTopRatedIdeas", props.recievedFilteredStats.topRatedIdeas);
+}
+
 async function refreshStats() {
   showSkeleton.value = true;
 
@@ -91,6 +96,12 @@ function loadData() {
 
 function getShortenedTitle(title, maxLength) {
   return title.length > maxLength ? title.substr(0, maxLength) + "..." : title;
+}
+
+function getStarRating(ratingAverage) {
+  const starPercentage = (ratingAverage.value / 5) * 100;
+
+  return (starPercentage ) + "%";
 }
 </script>
 
@@ -189,6 +200,36 @@ function getShortenedTitle(title, maxLength) {
             <p>Top Most commented ideas:</p>
             <h4>No comments were posted in this time interval</h4>
           </div>
+
+          <div v-if="stats && stats.topRatedIdeas !== 0" class="most-commented-ideas">
+            <p>Top rated ideas:</p>
+            <table id="idea-table">
+              <tr>
+                <th>Idea title</th>
+                <th>Rating</th>
+              </tr>
+              <tr v-for="(idea, index) in stats.topRatedIdeas" :key="index">
+                <td>
+                  {{ getShortenedTitle(stats.topRatedIdeas[index].title, 20) }}
+                </td>
+                <td>
+                  <div class="stars-outer">
+                    <div class="stars-inner" :style="{ width: getStarRating(stats.topRatedIdeas[index].ratingAverage) }"></div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+            <div class="swich-buttons">
+              <button class="load-button" @click="loadTopRatedIdeas()">
+                {{ !showTopIdeas ? "Load top rated ideas" : "Load all Ideas" }}
+              </button>
+
+              <!-- <button class="load-button" @click="refreshStats()">
+                Refresh
+              </button> -->
+            </div>
+          </div>
+
           <div class="most-commented-ideas" style="margin-bottom: 50px">
             <p>General information:</p>
             <table id="idea-table">
@@ -364,6 +405,35 @@ function getShortenedTitle(title, maxLength) {
 </template>
 
 <style scoped>
+.stars-outer {
+  position: relative;
+  display: inline-block;
+  width: 80px;
+  box-sizing: border-box;
+}
+
+.stars-inner {
+  top: 0;
+  box-sizing: border-box;
+  position: absolute;
+  overflow: hidden;
+}
+
+.stars-outer::before {
+  content: "\f005 \f005 \f005 \f005 \f005";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  color: #ccc;
+  width: 100%;
+}
+
+.stars-inner::before {
+  content: "\f005 \f005 \f005 \f005 \f005";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  color: #eb9224;
+}
+
 .swich-buttons {
   display: flex;
   align-items: center;
