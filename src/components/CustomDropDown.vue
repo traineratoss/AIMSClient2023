@@ -45,7 +45,7 @@ const props = defineProps({
   heightInVh: {
     type: Number,
     default: null,
-  },
+  }
 });
 
 const clearAllDropdownValues = ref(false);
@@ -245,7 +245,10 @@ function getInputPlaceholder() {
         />
         {{ variant }}
       </label>
-      <div v-if="allVariantsReactive && allVariantsReactive.length ===0" style="overflow: hidden;">
+      <div v-if="allVariantsReactive && allVariantsReactive.length ===0 && props.variants == 0" style="overflow: hidden;">
+        <CustomLoader :size="30" />
+      </div>
+      <div v-if="allVariantsReactive && allVariantsReactive.length ===0 && props.variants > 0" style="overflow: hidden;">
         <CustomLoader :size="30" />
       </div>
     </div>
