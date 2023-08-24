@@ -83,16 +83,10 @@ async function calculateImplementationPercentage() {
 }
 
 function loadTop5Ideas() {
-  console.log(
-    "Top 5 ideas >> ",
-    props.recievedFilteredStats.mostCommentedIdeas
-  );
-
   emits("loadTop5Ideas", props.recievedFilteredStats.mostCommentedIdeas);
 }
 
 function loadTopRatedIdeas() {
-
   emits("loadTopRatedIdeas", stats.value.topRatedIdeas);
 }
 

@@ -124,6 +124,13 @@ onMounted(async () => {
 
 stats.value = await getStats();
 
+watch(ideas, (newValue) => {
+  if (ideas.value.length == 0) {
+    showTopIdeas.value = false;
+    showTopRatedIdeas.value = false;
+  }
+})
+
 watch(searchValue, async (newValue) => {
   if (newValue && newValue.key === "Enter" && newValue.text !== undefined) {
     ideasTransitionContainer.value.style.overflowY = "hidden";
@@ -144,11 +151,11 @@ watch(searchValue, async (newValue) => {
       sortOrder.value
     );
     if (data === "No ideas found.") {
+      showTopIdeas.value = false;
+      showTopRatedIdeas.value = false;
       noIdeasFoundCondition.value = true;
       totalPages.value = 0;
       ideas.value = [];
-      showTopIdeas.value = false;
-      showTopRatedIdeas.value = false;
     } else {
       noIdeasFoundCondition.value = false;
       showTopIdeas.value = false;
@@ -869,8 +876,8 @@ function setIdeasEmptyFunction() {
             </div>
           </div>
           <div class="ideas-transition-container" ref="ideasTransitionContainer">
-            <h2 v-if="showTopIdeas">Top ideas</h2>
-            <h2 v-if="showTopRatedIdeas">Top rated ideas</h2>
+            <h2 v-if="showTopIdeas && !showTopRatedIdeas">Top ideas</h2>
+            <h2 v-if="!showTopIdeas && showTopRatedIdeas">Top rated ideas</h2>
 
             <div v-for="idea in ideas" :key="idea.id" class="idea-transition-item reveal">
               <IdeaCard :title="idea.title" :text="idea.text" :status="idea.status" :username="idea.username"
