@@ -591,11 +591,18 @@ async function setRating(indexValue) {
     }
   });
 
-  await addRatingToIdea(
+  const data = await addRatingToIdea(
     ideaId,
     ratingSet.value.ratingNumber,
     getCurrentUsername()
   );
+
+  // raters.value = [];
+  
+  // const ratings = await data.ratings;
+  // ratings.forEach((rating, index) => {
+  //   raters.value.push(rating);
+  // })
 }
 
 function leaveStar(indexValue) {
@@ -846,7 +853,7 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
           && currentIdeaViewMode.username == getCurrentUsername()">Ratings
         </div>
 
-        <div class="list-of-raters" v-if="canStarsAppear && disableFields && currentIdeaViewMode
+        <!-- <div class="list-of-raters" v-if="canStarsAppear && disableFields && currentIdeaViewMode
           && currentIdeaViewMode.username == getCurrentUsername()" style="">
           <div class="rater-stars" v-for="(rater, index) in raters" :key="index">
             <div class="rater-name" v-if="raters.length > 0">{{ getShortText(rater.userUsername, 1, 10) }}</div>
@@ -855,23 +862,21 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
             </div>
           </div>
           <div class="no-raters" v-if="raters.length === 0">No Ratings Yet</div>
+        </div> -->
+
+
+        <div class="list-of-rating-text-admin" v-if="canStarsAppear && disableFields"> 
+          List Of Raters ({{ raters.length }})
         </div>
 
-
-        <div class="list-of-rating-text-admin" v-if="canStarsAppear && disableFields && currentIdeaViewMode
-          && currentIdeaViewMode.username !== getCurrentUsername() && currentRole == 'ADMIN'"> 
-          List Of Raters
-        </div>
-
-        <div class="list-of-raters-admin" v-if="canStarsAppear && disableFields && currentIdeaViewMode
-          && currentIdeaViewMode.username !== getCurrentUsername() && currentRole == 'ADMIN'" style="">
+        <div class="list-of-raters-admin" v-if="canStarsAppear && disableFields" style="">
           <div class="rater-stars" v-for="(rater, index) in raters" :key="index">
             <div class="rater-name" v-if="raters.length > 0">{{ getShortText(rater.userUsername, 1, 10) }}</div>
             <div class="stars-outer" v-if="raters.length > 0">
               <div class="stars-inner" :style="{ width: getStarRating(rater.ratingNumber) }"></div>
             </div>
           </div>
-          <div class="no-raters" v-if="raters.length === 0">No Ratings Yet</div>
+          <div class="no-raters" v-if="raters.length === 0" style="margin-top: 2.5vh;">No Ratings Yet</div>
         </div>
 
         <img v-if="!canStarsAppear && disableFields" src="@/assets/img/loading-stars.gif"
