@@ -886,8 +886,8 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
           <div class="rate-idea-stars">
             {{ ratingSet.ratingNumber }} of 5
           </div>
-          <button class="delete-rating-button" v-if="ratingSet.isSet" @click="setRating(0)">
-            <span class="material-symbols-outlined" style="color: rgb(163, 2, 2); margin-left: 0.6vw;">
+          <button class="delete-rating-button" :style="ratingSet.isSet ? {'visibility': 'visible'} : {'visibility': 'hidden'} " @click="setRating(0)">
+            <span class="material-symbols-outlined" >
               delete
             </span>
           </button>
@@ -947,13 +947,16 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
 
 <style scoped>
 
-.delete-rating-button:hover {
-  color: rgb(230, 6, 6);
-}
 .delete-rating-button {
   border: none;
   background-color: rgba(255, 0, 0, 0);
   cursor: pointer;
+  color: #e68608;
+  margin-left: 0.6vw;
+}
+
+.delete-rating-button:hover {
+  color: #818080;
 }
 
 .rate-idea-stars {
@@ -1117,7 +1120,7 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
   width: 11vw;
   border: 1px solid slategray;
   border-radius: 5px;
-  background-color: #61616293;
+  background-color: #9a9a9d93;
   display: flex;
   align-items: center;
   justify-content: center;
