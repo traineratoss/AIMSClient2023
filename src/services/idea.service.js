@@ -233,9 +233,6 @@ async function deleteIdeaRatingFromUser(id, username) {
   if (!response.ok) {
     const responseText = await response.text();
     return responseText;
-  } else {
-    const json = await response.json();
-    return json;
   }
 }
 

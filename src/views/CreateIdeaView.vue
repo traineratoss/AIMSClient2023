@@ -597,8 +597,9 @@ async function setRating(indexValue) {
 
     stars.value = document.querySelectorAll(".star");
     stars.value.forEach((star, index) => {
-        star.style.backgroundImage = "url('src/assets/img/white-star.png')"
+      star.style.backgroundImage = "url('src/assets/img/white-star.png')"
     });
+    raters.value = raters.value.filter((idea) => idea.userUsername !== getCurrentUsername())
     await deleteIdeaRatingFromUser(ideaId, getCurrentUsername());
   } else {
     stars.value = document.querySelectorAll(".star");
@@ -617,14 +618,18 @@ async function setRating(indexValue) {
       ideaRating.value,
       getCurrentUsername()
     );
+
+    raters.value = [];
+    const ratings = await data.ratings;
+    if (ratings.length === 0) {
+      
+    } else {
+      ratings.forEach((rating, index) => {
+        raters.value.push(rating);
+      })
+    }
+
   }
-
-  // raters.value = [];
-
-  // const ratings = await data.ratings;
-  // ratings.forEach((rating, index) => {
-  //   raters.value.push(rating);
-  // })
 }
 
 function leaveStar(indexValue) {
@@ -882,7 +887,7 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
             {{ ratingSet.ratingNumber }} of 5
           </div>
           <button class="delete-rating-button" v-if="ratingSet.isSet" @click="setRating(0)">
-            <span class="material-symbols-outlined" style="color: red; margin-left: 0.6vw;">
+            <span class="material-symbols-outlined" style="color: rgb(163, 2, 2); margin-left: 0.6vw;">
               delete
             </span>
           </button>
@@ -941,6 +946,10 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
 </template>
 
 <style scoped>
+
+.delete-rating-button:hover {
+  color: rgb(230, 6, 6);
+}
 .delete-rating-button {
   border: none;
   background-color: rgba(255, 0, 0, 0);

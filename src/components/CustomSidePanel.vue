@@ -114,7 +114,7 @@ watch(ratingSet, (newRatingSet) => {
   }
 
   console.log(ratingSet.value)
-}, {deep: true})
+}, { deep: true })
 
 watch(searchValue, (newValue) => {
   if (newValue && newValue.text !== undefined) {
@@ -244,8 +244,8 @@ watch(ratingSet, async (newValue) => {
 }, { deep: true })
 
 const filter = async () => {
-    
-    emits("setIdeasEmpty", true);
+
+  emits("setIdeasEmpty", true);
   const title = inputTitle.value;
   const text = inputText.value;
   const category = categoriesSelected.value;
@@ -577,17 +577,27 @@ function leaveStar(indexValue) {
 
 
 async function setRating(indexValue) {
-  stars.value = document.querySelectorAll(".star");
-  ratingSet.value.isSet = true;
-  ratingSet.value.ratingNumber = indexValue;
-  filterStarsRating.value = ratingSet.value.ratingNumber;
+  if (indexValue === 0) {
+    ratingSet.value.isSet = false;
+    ratingSet.value.ratingNumber = 0;
+    filterStarsRating.value = 0;
 
-  stars.value.forEach((star, index) => {
-    if (index < indexValue) {
-      // star.style.backgroundPosition = "left -8.8vh";
-      star.style.backgroundImage = "url('src/assets/img/yellow-star.png')"
-    }
-  });
+    stars.value = document.querySelectorAll(".star");
+    stars.value.forEach((star, index) => {
+      star.style.backgroundImage = "url('src/assets/img/white-star.png')"
+    });
+  } else {
+    stars.value = document.querySelectorAll(".star");
+    ratingSet.value.isSet = true;
+    ratingSet.value.ratingNumber = indexValue;
+    filterStarsRating.value = indexValue;
+
+    stars.value.forEach((star, index) => {
+      if (index < indexValue) {
+        star.style.backgroundImage = "url('src/assets/img/yellow-star.png')"
+      }
+    });
+  }
 }
 
 </script>
@@ -685,6 +695,12 @@ async function setRating(indexValue) {
             @mouseleave="leaveStar(4)"></i>
           <i class="star" @click="setRating(5)" @mouseenter="starsEventListener(5), ratingSet.ratingNumber = 5"
             @mouseleave="leaveStar(5)"></i>
+
+          <button class="delete-rating-button" :style="ratingSet.isSet ? {'visibility': 'visible'} : {'visibility': 'hidden'} " @click="setRating(0)">
+            <span class="material-symbols-outlined">
+              delete
+            </span>
+          </button>
         </div>
       </div>
     </div>
@@ -716,9 +732,28 @@ async function setRating(indexValue) {
 
 <style scoped>
 
+.rating {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.delete-rating-button {
+  border: none;
+  background-color: rgba(255, 0, 0, 0);
+  cursor: pointer;
+  color: white;
+  margin-bottom: 1vh;
+  margin-left: 0.5vw;
+}
+
+.delete-rating-button:hover {
+  color: #fb9209;
+}
+
 .rating-text {
   margin-top: 0.55vh;
 }
+
 .star {
   background-image: url("@/assets/img/white-star.png");
   background-size: 3vh;
@@ -727,6 +762,7 @@ async function setRating(indexValue) {
   float: left;
   cursor: pointer;
   gap: 100px;
+  margin-bottom: 1.7vh;
 }
 
 .stars-outer {
@@ -838,7 +874,7 @@ span {
 
 .top-container-child-rating {
   display: grid;
-  grid-template-columns: 30% 70%;
+  grid-template-columns: 30% 60% 10%;
 }
 
 .top-container-child-dropdown {
