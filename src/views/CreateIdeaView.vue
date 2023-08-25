@@ -56,6 +56,8 @@ const ratingSet = ref({
   ratingNumber: 0,
 });
 
+const ideaRating = ref(0);
+
 const canStarsAppear = ref(false);
 
 const regex =
@@ -106,12 +108,13 @@ onMounted(async () => {
         canStarsAppear.value = true;
         ratingSet.value.isSet = true;
         ratingSet.value.ratingNumber = rating.ratingNumber;
+        ideaRating.value = ratingSet.value.ratingNumber;
 
         setTimeout(() => {
           stars.value = document.querySelectorAll(".star");
           stars.value.forEach((star, index) => {
             if (index < ratingSet.value.ratingNumber) {
-              star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
+              star.style.backgroundImage = "url('src/assets/img/yellow-star.png')"
             } else {
               star.style.backgroundImage = "url('src/assets/img/white-star.png')"
             }
@@ -154,11 +157,11 @@ onMounted(async () => {
 });
 
 // using deep because of the nested propreties, this is used for removing a rating if we put 0 stars
-watch(ratingSet, async (newValue) => {
-  if (!newValue.isSet) {
-    await deleteIdeaRatingFromUser(ideaId, getCurrentUsername());
-  }
-}, { deep: true })
+// watch(ratingSet, async (newValue) => {
+//   if (!newValue.isSet) {
+
+//   }
+// }, { deep: true })
 
 watch(categoriesSelected, (newValue) => {
   if (newValue.length > 0) {
@@ -192,11 +195,13 @@ function starsEventListener(indexValue) {
     stars.value.forEach((star, index) => {
       star.addEventListener("mouseenter", () => {
         if (index == 0 && !ratingSet.value.isSet) {
-          star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
+          // star.style.backgroundPosition = "left -8.8vh";
+          star.style.backgroundImage = "url('src/assets/img/orange-star.png')";
         } else if (!ratingSet.value.isSet) {
           let number = index;
           while (number >= 0) {
-            stars.value[number].style.backgroundImage = "url('src/assets/img/orange-star.png')"
+            // stars.value[number].style.backgroundPosition = "left -8.8vh";
+            stars.value[number].style.backgroundImage = "url('src/assets/img/orange-star.png')";
             number--;
           }
         }
@@ -204,10 +209,12 @@ function starsEventListener(indexValue) {
 
       star.addEventListener("mouseleave", () => {
         if (index == 0 && !ratingSet.value.isSet) {
+          // star.style.backgroundPosition = "left -0.2vh";
           star.style.backgroundImage = "url('src/assets/img/white-star.png')"
         } else if (!ratingSet.value.isSet) {
           let number = index;
           while (number >= 0) {
+            // stars.value[number].style.backgroundPosition = "left -0.2vh";
             stars.value[number].style.backgroundImage = "url('src/assets/img/white-star.png')"
             number--;
           }
@@ -219,12 +226,13 @@ function starsEventListener(indexValue) {
     if (indexValue !== ratingSet.value.ratingNumber) {
       stars.value.forEach((star, index) => {
         if (index < indexValue) {
+          // star.style.backgroundPosition = "left -8.8vh";
           star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
         } else {
+          // star.style.backgroundPosition = "left -0.2vh";
           star.style.backgroundImage = "url('src/assets/img/white-star.png')"
         }
       });
-      ratingSet.value.isSet = false;
     }
   }
 }
@@ -581,24 +589,38 @@ function removeSelection(index) {
 }
 
 async function setRating(indexValue) {
-  stars.value = document.querySelectorAll(".star");
-  ratingSet.value.isSet = true;
-  ratingSet.value.ratingNumber = indexValue;
 
-  stars.value.forEach((star, index) => {
-    if (index < indexValue) {
-      star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
-    }
-  });
+  if (indexValue === 0) {
+    ratingSet.value.isSet = false;
+    ratingSet.value.ratingNumber = 0;
+    ideaRating.value = 0;
 
-  const data = await addRatingToIdea(
-    ideaId,
-    ratingSet.value.ratingNumber,
-    getCurrentUsername()
-  );
+    stars.value = document.querySelectorAll(".star");
+    stars.value.forEach((star, index) => {
+        star.style.backgroundImage = "url('src/assets/img/white-star.png')"
+    });
+    await deleteIdeaRatingFromUser(ideaId, getCurrentUsername());
+  } else {
+    stars.value = document.querySelectorAll(".star");
+    ratingSet.value.isSet = true;
+    ratingSet.value.ratingNumber = indexValue;
+    ideaRating.value = indexValue;
+
+    stars.value.forEach((star, index) => {
+      if (index < indexValue) {
+        star.style.backgroundImage = "url('src/assets/img/yellow-star.png')"
+      }
+    });
+
+    const data = await addRatingToIdea(
+      ideaId,
+      ideaRating.value,
+      getCurrentUsername()
+    );
+  }
 
   // raters.value = [];
-  
+
   // const ratings = await data.ratings;
   // ratings.forEach((rating, index) => {
   //   raters.value.push(rating);
@@ -607,7 +629,17 @@ async function setRating(indexValue) {
 
 function leaveStar(indexValue) {
   if (ratingSet.value.isSet) {
-    ratingSet.value.ratingNumber = indexValue;
+    stars.value = document.querySelectorAll(".star");
+    ratingSet.value.isSet = true;
+    ratingSet.value.ratingNumber = ideaRating.value;
+
+    stars.value.forEach((star, index) => {
+      if (index < ideaRating.value) {
+        star.style.backgroundImage = "url('src/assets/img/yellow-star.png')"
+      } else {
+        star.style.backgroundImage = "url('src/assets/img/white-star.png')"
+      }
+    });
   } else {
     ratingSet.value.ratingNumber = 0;
   }
@@ -844,9 +876,16 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
         </div>
 
         <div class="rate-idea-text" v-if="disableFields &&
-          currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername() && canStarsAppear">{{
-    ratingSet.ratingNumber }} of
-          5
+          currentIdeaViewMode && currentIdeaViewMode.username !== getCurrentUsername() && canStarsAppear">
+
+          <div class="rate-idea-stars">
+            {{ ratingSet.ratingNumber }} of 5
+          </div>
+          <button class="delete-rating-button" v-if="ratingSet.isSet" @click="setRating(0)">
+            <span class="material-symbols-outlined" style="color: red; margin-left: 0.6vw;">
+              delete
+            </span>
+          </button>
         </div>
 
         <div class="no-raters" style="margin-bottom: 0.5vh;" v-if="raters.length > 0 && canStarsAppear && currentIdeaViewMode
@@ -865,7 +904,7 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
         </div> -->
 
 
-        <div class="list-of-rating-text-admin" v-if="canStarsAppear && disableFields"> 
+        <div class="list-of-rating-text-admin" v-if="canStarsAppear && disableFields">
           List Of Raters ({{ raters.length }})
         </div>
 
@@ -902,6 +941,17 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
 </template>
 
 <style scoped>
+.delete-rating-button {
+  border: none;
+  background-color: rgba(255, 0, 0, 0);
+  cursor: pointer;
+}
+
+.rate-idea-stars {
+  margin-left: 4.7vw;
+  margin-top: 0.5vh;
+}
+
 .no-raters {
   font-weight: 600;
   font-size: 1.5vh;
@@ -1048,7 +1098,9 @@ function getShortText(text, numberOfRows, numberOfCharacters) {
   color: rgba(0, 0, 0, 0.445);
   font-weight: 650;
   animation: fadeIn 1s;
-  margin-top: 10px
+  display: grid;
+  grid-template-columns: 80% 20%;
+  width: 11vw;
 }
 
 .rating {

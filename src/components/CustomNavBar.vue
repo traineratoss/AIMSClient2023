@@ -302,12 +302,14 @@ function onMouseLeaveUser() {
       <div class="user-details">
         <h3
           style="font-size: 16px; font-weight: 550; height: 1vh; margin: 1vh 0"
+          v-if="currentUsername"
         >
           {{ getShortText(currentUsername, 1, 14) }}
         </h3>
         <router-link
           to="/my-profile"
           style="text-decoration: none; color: black; text-align: center;"
+          v-if="getCurrentFullName()"
         >
           {{ getShortText(getCurrentFullName(), 1, 20) || 'User details' }}
         </router-link>

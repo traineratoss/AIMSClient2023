@@ -46,6 +46,7 @@ const ratingSet = ref({
   isSet: false,
   ratingNumber: 0,
 });
+const filterStarsRating = ref(0);
 
 const statusOptions =
   props.currentUser === null
@@ -541,7 +542,6 @@ function starsEventListener(indexValue) {
           star.style.backgroundImage = "url('src/assets/img/white-star.png')"
         }
       });
-      ratingSet.value.isSet = false;
     }
   }
 }
@@ -558,7 +558,18 @@ function onMountStars() {
 
 function leaveStar(indexValue) {
   if (ratingSet.value.isSet) {
-    ratingSet.value.ratingNumber = indexValue;
+    stars.value = document.querySelectorAll(".star");
+    ratingSet.value.isSet = true;
+    ratingSet.value.ratingNumber = filterStarsRating.value;
+    console.log(filterStarsRating.value)
+
+    stars.value.forEach((star, index) => {
+      if (index < filterStarsRating.value) {
+        star.style.backgroundImage = "url('src/assets/img/yellow-star.png')"
+      } else {
+        star.style.backgroundImage = "url('src/assets/img/white-star.png')"
+      }
+    });
   } else {
     ratingSet.value.ratingNumber = 0;
   }
@@ -569,11 +580,12 @@ async function setRating(indexValue) {
   stars.value = document.querySelectorAll(".star");
   ratingSet.value.isSet = true;
   ratingSet.value.ratingNumber = indexValue;
+  filterStarsRating.value = ratingSet.value.ratingNumber;
 
   stars.value.forEach((star, index) => {
     if (index < indexValue) {
       // star.style.backgroundPosition = "left -8.8vh";
-      star.style.backgroundImage = "url('src/assets/img/orange-star.png')"
+      star.style.backgroundImage = "url('src/assets/img/yellow-star.png')"
     }
   });
 }
